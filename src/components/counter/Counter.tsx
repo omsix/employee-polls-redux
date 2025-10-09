@@ -1,7 +1,7 @@
 import type { JSX } from "react"
 import { useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../app/hooks"
-import styles from "./Counter.module.css"
+import styles from "./counter.module.css"
 import {
   decrement,
   increment,

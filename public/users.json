@@ -1,0 +1,52 @@
+{
+    "omarcisse": {
+        "id": "omarcisse",
+        "name": "Omar Cisse",
+        "avatarURL": "/avatars/omarcisse.png",
+        "answers": {
+            "question2": "optionTwo",
+            "question4": "optionOne"
+        },
+        "questions": [
+            "question6"
+        ]
+    },
+    "sarahedo": {
+        "id": "sarahedo",
+        "name": "Sarah Edo",
+        "avatarURL": "/avatars/sarah.png",
+        "answers": {
+            "question1": "optionOne",
+            "question3": "optionTwo"
+        },
+        "questions": [
+            "question5",
+            "question7"
+        ]
+    },
+    "tylermcginnis": {
+        "id": "tylermcginnis",
+        "name": "Tyler McGinnis",
+        "avatarURL": "/avatars/tyler.png",
+        "answers": {
+            "question2": "optionTwo",
+            "question4": "optionOne"
+        },
+        "questions": [
+            "question6"
+        ]
+    },
+    "johndoe": {
+        "id": "johndoe",
+        "name": "John Doe",
+        "avatarURL": "/avatars/john.png",
+        "answers": {
+            "question1": "optionTwo",
+            "question2": "optionOne"
+        },
+        "questions": [
+            "question8",
+            "question9"
+        ]
+    }
+}
