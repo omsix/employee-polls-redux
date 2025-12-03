@@ -1,3 +1,8 @@
 .poll-details-component {
-	
+    position: relative
+}
+
+.poll-details-avatar {
+    width: 75px !important;
+    height: 75px !important;
 }

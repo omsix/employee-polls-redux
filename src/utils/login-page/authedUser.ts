@@ -1,11 +1,6 @@
 import { createAppSlice } from '../../app/createAppSlice';
 import { fetchAuthedUser } from '../../components/login-page/loginAPI';
-
-export type AuthedUserState = {
-    name: string | null;
-    expiresAt: number | null; // timestamp en ms
-    status: "idle" | "loading" | "failed"
-};
+import { AuthedUserState } from '../../state-tree/state-tree';
 
 const localUser = localStorage.getItem('authedUser');
 

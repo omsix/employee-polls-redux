@@ -1,4 +1,5 @@
-import { UsersState } from "../../utils/login-page/users";
+import { _getUsers } from "../../data/data";
+import { UsersState } from "../../state-tree/state-tree";
 
 // A mock function to mimic making an async request for data
 export const fetchAuthedUser = (name: string | null = null, durationMinutes: number = 5): Promise<{ data: { name: string | null, expiresAt: number | null } }> =>
@@ -9,8 +10,4 @@ export const fetchAuthedUser = (name: string | null = null, durationMinutes: num
     }, 500),
   )
 
-export const fetchUsers = async (): Promise<UsersState> => {
-  const response = await fetch('/users.json');
-  console.log("response from fetch users", response);
-  return await response.json();
-};
+export const getUsers: () => Promise<UsersState> = () => _getUsers() as Promise<UsersState>;

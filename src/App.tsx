@@ -5,7 +5,8 @@ import { LoginPageComponent } from "./components/login-page/login-page.component
 import { useEffect } from "react"
 import { logout } from "./utils/login-page/authedUser"
 import { receiveUsers } from "./utils/login-page/users"
-import { fetchUsers } from "./components/login-page/loginAPI"
+import { getUsers } from "./components/login-page/loginAPI"
+import MenuToolbarComponent from "./components/menu-toolbar/menu-toolbar.component"
 
 const App: React.FC = () => {
   const { name, expiresAt } = useAppSelector((state) => state.authedUser);
@@ -13,7 +14,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const loadUsers = async () => {
-      const users = await fetchUsers(); // fetch from API or static file
+      const users = await getUsers(); // fetch from API or static file
       dispatch(receiveUsers(users));
     };
     loadUsers();
@@ -26,7 +27,8 @@ const App: React.FC = () => {
   }, [expiresAt, dispatch]);
 
   return <>
-    <div className="App">{name ? <MainRoutes /> : <LoginPageComponent />}
+    <div className="App">
+      {name ? <div><MenuToolbarComponent /><MainRoutes /></div> : <LoginPageComponent />}
     </div>
   </>;
 }

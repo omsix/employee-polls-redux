@@ -5,6 +5,7 @@ import { counterSlice } from "../components/counter/counterSlice"
 import { quotesApiSlice } from "../components/quotes/quotesApiSlice"
 import { authedUserSlice } from "../utils/login-page/authedUser"
 import usersReducer from "../utils/login-page/users"
+import questionsReducer from "../utils/questions/questions"
 import {
   persistStore,
   persistReducer,
@@ -30,6 +31,7 @@ const rootReducer = combineSlices({
   [quotesApiSlice.reducerPath]: quotesApiSlice.reducer,
   authedUser: authedUserSlice.reducer,
   users: usersReducer,
+  questions: questionsReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -53,7 +55,7 @@ export const makeStore = () => {
     },
   })
   // configure listeners using the provided defaults
-  // optional, but required for `refetchOnFocus`/`refetchOnReconnect` behaviors
+  // optio nal, but required for `refetchOnFocus`/`refetchOnReconnect` behaviors
   setupListeners(store.dispatch)
   return store
 }

@@ -1,16 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { UsersState } from '../../state-tree/state-tree';
 
-export interface User {
-  id: string;
-  name: string;
-  avatarURL: string;
-  answers: Record<string, string>; // questionId -> selectedOption
-  questions: string[]; // array of question IDs created by the user
-}
-
-export interface UsersState {
-  [userId: string]: User;
-}
 
 const initialState: UsersState = {};
 

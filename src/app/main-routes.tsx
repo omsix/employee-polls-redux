@@ -14,6 +14,7 @@ const MainRoutes: React.FC = () => {
             <Route path="/add" element={<NewPollComponent />} />
             <Route path="/leaderboard" element={<LeaderBoardComponent />} />
             <Route path="/404" element={<NotFoundComponent />} />
+            <Route path='/login' element={<DashboardComponent/>}/>
             <Route path="*" element={<Navigate to="/404" />} />
         </Routes>
     );

@@ -1,0 +1,4 @@
+.menu-toolbar-component {
+    display: flex;
+    flex-direction: row;
+}
