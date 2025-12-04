@@ -2,7 +2,13 @@
     position: relative
 }
 
-.poll-details-avatar {
-    width: 75px !important;
-    height: 75px !important;
+.poll-details-avatar-img {
+    width: 50px !important;
+    height: 50px !important;
+    border-style: none !important;
+}
+
+.poll-details-avatar-letter {
+    width: 40px !important;
+    height: 40px !important;
 }

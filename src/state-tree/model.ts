@@ -1,6 +1,15 @@
 export interface Poll {
     question: Question;
     expand: boolean;
+    answered: boolean;
+    optionOne: {
+        voted: number;
+        percentage: string;
+    };
+    optionTwo: {
+        voted: number;
+        percentage: string;
+    };
 };
 
 export interface User {

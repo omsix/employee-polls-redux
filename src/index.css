@@ -9,8 +9,10 @@ code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
 :root {
-  --AppBar-background: #1976d2;
+  --AppBar-background: rgba(112, 76, 182, 0.1);
+  --AppBar-color: rgb(112, 76, 182);
   --App-font-family: 'lato';
   --body-font-family: 'lato', sans-serif;
 }

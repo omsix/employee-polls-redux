@@ -31,7 +31,7 @@ function CustomTabPanel(props: TabPanelProps) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box>{children}</Box>}
     </div>
   );
 }
@@ -46,6 +46,7 @@ export const DashboardComponent: React.FunctionComponent<DashboardComponentProps
   };
   const dispatch = useAppDispatch();
   const authedUser = useAppSelector((state) => state.authedUser);
+  const users = useAppSelector((state) => state.users);
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -60,17 +61,41 @@ export const DashboardComponent: React.FunctionComponent<DashboardComponentProps
     setAnsweredPolls(Object.values(questions).filter((question) => {
       return question.optionOne.votes.includes(authedUser.name!) || question.optionTwo.votes.includes(authedUser.name!);
     }).map((question) => {
+      const totalUsers = Object.values(users).length;
+      const optionOneVotes = question.optionOne.votes.length;
+      const optionTwoVotes = question.optionTwo.votes.length;
       return {
         question,
-        expand: false
+        expand: false,
+        answered: true,
+        optionOne: {
+          voted: optionOneVotes,
+          percentage: `${Math.round((optionOneVotes / totalUsers) * 100)}%`
+        },
+        optionTwo: {
+          voted: optionTwoVotes,
+          percentage: `${Math.round((optionTwoVotes / totalUsers) * 100)}%`
+        }
       }
     }).sort((a, b) => b.question.timestamp - a.question.timestamp));
     setPendingPolls(Object.values(questions).filter((question) => {
       return !question.optionOne.votes.includes(authedUser.name!) && !question.optionTwo.votes.includes(authedUser.name!);
     }).map((question) => {
+       const totalUsers = Object.values(users).length;
+      const optionOneVotes = question.optionOne.votes.length;
+      const optionTwoVotes = question.optionTwo.votes.length;
       return {
         question,
-        expand: false
+        expand: false,
+        answered: false,
+        optionOne: {
+          voted: optionOneVotes,
+          percentage: `${Math.round((optionOneVotes / totalUsers) * 100)}%`
+        },
+        optionTwo: {
+          voted: optionTwoVotes,
+          percentage: `${Math.round((optionTwoVotes / totalUsers) * 100)}%`
+        }
       }
     }).sort((a, b) => b.question.timestamp - a.question.timestamp));
   }, [questions])

@@ -27,7 +27,12 @@
     }
 }
 
+.poll-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
 
-    .MuiTabs-root {
-        width: 100%;
-    }
+.MuiTabs-root {
+    width: 100%;
+}

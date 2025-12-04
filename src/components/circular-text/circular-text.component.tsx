@@ -14,7 +14,7 @@ const CircularTextComponent: React.FC<CircularTextComponentProps> = ({
   radius = 75,
   fontSize = 14,
   fontWeight = "bold",
-  color = "black",
+  color = "var(--AppBar-color)",
   children,
 }) => {
   // Génère un ID unique pour le path

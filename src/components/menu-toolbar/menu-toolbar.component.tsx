@@ -41,7 +41,7 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
             text={fullName}
             radius={40}
             fontSize={12}
-            color="white"            
+            color="var(--AppBar-color)"            
           >
             <Avatar alt={fullName} src={avatarSrc || undefined}></Avatar>
           </CircularText>
