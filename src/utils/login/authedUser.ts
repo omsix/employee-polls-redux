@@ -2,10 +2,10 @@ import { createAppSlice } from '../../app/createAppSlice';
 import { fetchAuthedUser } from '../../components/login-page/loginAPI';
 import { AuthedUserState } from '../../state-tree/state-tree';
 
-const localUser = localStorage.getItem('authedUser');
+const localUser: string = localStorage.getItem('authedUser') as string;
 
 const initialState: AuthedUserState = {
-    name: localUser ? JSON.parse(localUser) : null,
+    name: localUser ?? '',
     expiresAt: null,
     status: "idle"
 };

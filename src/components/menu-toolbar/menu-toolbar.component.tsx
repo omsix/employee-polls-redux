@@ -7,7 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { logout } from '../../utils/login-page/authedUser';
+import { logout } from '../../utils/login/authedUser';
 import { useAppSelector } from '../../app/hooks';
 import { Tooltip, Avatar } from "@mui/material";
 import CircularText from "../circular-text/circular-text.component";
@@ -18,7 +18,7 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userId = useAppSelector((state) => state.authedUser.name);
-  const users = useAppSelector((state) => state.users);
+  const users = useAppSelector((state) => state.users.entities);
   const user = users[userId || ''] || {};
   const avatarSrc = user.avatarURL;
   const fullName = user.name || '';
@@ -55,6 +55,5 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
       </Toolbar>
     </AppBar>
   );
-};
-
+}
 export default MenuToolbarComponent;

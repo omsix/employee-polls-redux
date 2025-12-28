@@ -3,8 +3,8 @@ import { useAppSelector, useAppDispatch } from "./app/hooks"
 import MainRoutes from "./app/main-routes"
 import { LoginPageComponent } from "./components/login-page/login-page.component"
 import { useEffect } from "react"
-import { logout } from "./utils/login-page/authedUser"
-import { receiveUsers } from "./utils/login-page/users"
+import { logout } from "./utils/login/authedUser"
+import { receiveUsers } from "./utils/login/users"
 import { getUsers } from "./components/login-page/loginAPI"
 import MenuToolbarComponent from "./components/menu-toolbar/menu-toolbar.component"
 
@@ -15,7 +15,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const loadUsers = async () => {
       const users = await getUsers(); // fetch from API or static file
-      dispatch(receiveUsers(users));
+      dispatch(receiveUsers(users.entities));
     };
     loadUsers();
   }, [])

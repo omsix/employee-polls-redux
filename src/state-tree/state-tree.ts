@@ -1,4 +1,4 @@
-import { User, Question } from "./model";
+import { User, Question, Poll } from "./model";
 
 //AuthedUser
 export type AuthedUserState = {
@@ -9,10 +9,18 @@ export type AuthedUserState = {
 
 //Users
 export type UsersState = {
-    [userId: string]: User;
+    entities: { [userId: string]: User; };
+    status: "idle" | "loading" | "failed";
 };
 
 //Questions
 export type QuestionsState = {
-    [questionId: string]: Question;
+    entities: { [questionId: string]: Question; };
+    status: "idle" | "loading" | "failed";
+};
+
+//Polls
+export type PollsState = {
+    entities: { [questionId: string]: Poll; };
+    status: "idle" | "loading" | "failed";
 };

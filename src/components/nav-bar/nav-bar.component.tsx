@@ -1,5 +1,5 @@
 import { useAppDispatch } from '../../app/hooks';
-import { logout } from '../../utils/login-page/authedUser';
+import { logout } from '../../utils/login/authedUser';
 
 export interface NavBarComponentProps { }
 

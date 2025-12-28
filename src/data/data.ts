@@ -186,7 +186,7 @@ export function _saveQuestionAnswer({ authedUser, qid, answer }: { authedUser: s
 
     setTimeout(() => {
       users = {
-        ...users,
+        ...users, 
         [authedUser]: {
           ...users[authedUser],
           answers: {

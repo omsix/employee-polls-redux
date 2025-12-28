@@ -34,6 +34,22 @@ const theme = createTheme({
         },
       },
     },
+    MuiCardActions: {
+      styleOverrides: {
+        root: {
+          justifyContent: "center",
+          "& .MuiButtonBase-root": {
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.63)",
+            maxWidth: "max-content", padding: "4px 12px", borderRadius: "16px",
+            margin: "4px 4px", minHeight: "24px",
+          },
+          "& .MuiButtonBase-root:hover": {
+            backgroundColor: "var(--AppBar-background)",
+            color: "var(--AppBar-color)",
+          },
+        },
+      },
+    },
     MuiCardHeader: {
       styleOverrides: {
         root: {
@@ -89,6 +105,44 @@ const theme = createTheme({
             marginBlockStart: "0px",
             marginBlockEnd: "0px",
           }
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          justifyContent: "center",
+          "& .MuiButtonBase-root": {
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.63)",
+            maxWidth: "max-content", padding: "4px 12px", borderRadius: "16px",
+            margin: "4px 4px", minHeight: "24px",
+          },
+          "& .MuiButtonBase-root:hover": {
+            backgroundColor: "var(--AppBar-background)",
+            color: "var(--AppBar-color)",
+          },
+        },
+      },
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          display: "flex",
+          flexDirection: "column",
+          padding: "8px 24px",
+          ".MuiDialogTitle-root + &": {
+            paddingTop: "8px",
+          },
+        },
+      },
+    },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "var(--AppBar-background)",
+          color: "var(--AppBar-color)",
+          borderRadius: "8px",
+          padding: "8px 24px",
         },
       },
     },

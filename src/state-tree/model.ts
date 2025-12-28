@@ -2,6 +2,7 @@ export interface Poll {
     question: Question;
     expand: boolean;
     answered: boolean;
+    selectedAnswer?: "optionOne" | "optionTwo" | undefined;
     optionOne: {
         voted: number;
         percentage: string;

@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
 import styles from "./login-page.module.css";
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { setAuthedUser } from '../../utils/login-page/authedUser';
+import { setAuthedUser } from '../../utils/login/authedUser';
+import { User } from '../../state-tree/model';
 export interface LoginPageComponentProps { }
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
+import { getQuestions } from './loginAPI';
+import { receiveQuestions } from '../../utils/questions/questions';
 
 export const LoginPageComponent: React.FunctionComponent<LoginPageComponentProps> = () => {
   const [selectedUser, setSelectedUser] = useState('');
-  const users = useAppSelector((state) => state.users);
+  const users: { [key: string]: User } = useAppSelector((state) => state.users.entities);
   const dispatch = useAppDispatch();
 
   const handleLogin = () => {
-    if (selectedUser) { 
-      dispatch(setAuthedUser({ name: selectedUser, durationMinutes: 60 }));
+    if (selectedUser) {
+      const loadAUthedUserAndQuestions = async () => {
+        const questions = await getQuestions(); // fetch from API or static file
+        dispatch(receiveQuestions(questions));
+        dispatch(setAuthedUser({ name: selectedUser, durationMinutes: 60 }));
+      };
+      loadAUthedUserAndQuestions();
     }
   };
 

@@ -1,10 +1,8 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
 import { combineSlices, configureStore } from "@reduxjs/toolkit"
 import { setupListeners } from "@reduxjs/toolkit/query"
-import { counterSlice } from "../components/counter/counterSlice"
-import { quotesApiSlice } from "../components/quotes/quotesApiSlice"
-import { authedUserSlice } from "../utils/login-page/authedUser"
-import usersReducer from "../utils/login-page/users"
+import authedUserReducer from "../utils/login/authedUser"
+import usersReducer from "../utils/login/users"
 import questionsReducer from "../utils/questions/questions"
 import {
   persistStore,
@@ -17,19 +15,20 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
+import loggerMiddleware from "./loggerMiddleware";
+import pollsApi from "../utils/polls/pollsAPI"
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['authedUser'], // seuls les slices à persister
+  whitelist: ['authedUser'], // the only slices to persist
 };
 
 // `combineSlices` automatically combines the reducers using
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
 const rootReducer = combineSlices({
-  [counterSlice.name]: counterSlice.reducer,
-  [quotesApiSlice.reducerPath]: quotesApiSlice.reducer,
-  authedUser: authedUserSlice.reducer,
+  [pollsApi.reducerPath]: pollsApi.reducer,
+  authedUser: authedUserReducer,
   users: usersReducer,
   questions: questionsReducer,
 })
@@ -51,7 +50,7 @@ export const makeStore = () => {
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(quotesApiSlice.middleware)
+      }).concat(pollsApi.middleware).concat(loggerMiddleware)
     },
   })
   // configure listeners using the provided defaults
