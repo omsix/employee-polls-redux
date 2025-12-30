@@ -3,6 +3,31 @@ import { _getQuestions, _getUsers, _saveQuestionAnswer, } from "../../data/data"
 import { Poll, Question, User } from "../../state-tree/model";
 import { PollsState } from "../../state-tree/state-tree";
 
+type PollsUiState = Record<string, { expand: boolean }>;
+const POLLS_UI_STATE_STORAGE_KEY = "pollsUiState";
+
+function readPollsUiState(): PollsUiState {
+  try {
+    const raw = localStorage.getItem(POLLS_UI_STATE_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === "object") {
+      return parsed as PollsUiState;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
+function writePollsUiState(state: PollsUiState) {
+  try {
+    localStorage.setItem(POLLS_UI_STATE_STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore
+  }
+}
+
 // The questions
 export const fetchQuestions: () => Promise<{ [key: string]: Question }> = () =>
   _getQuestions() as Promise<{ [key: string]: Question }>;
@@ -20,15 +45,18 @@ async function loadPolls(questions: { [key: string]: Question }, users: { [key: 
 ): Promise<PollsState> {
   const authedUser: string = localStorage.getItem('authedUser') as string;
   const totalUsers = Object.values(users).length;
+  const pollsUiState = readPollsUiState();
 
   const polls: Poll[] = Object.values(questions)
     .map((question) => {
       const optionOneVotes = question.optionOne.votes.length;
       const optionTwoVotes = question.optionTwo.votes.length;
       const poll = initialState?.[question.id];
+      const persistedExpand = pollsUiState?.[question.id]?.expand;
       if (poll) {
         return Object.assign(poll, {
           question,
+          expand: persistedExpand ?? poll.expand,
           answered: question.optionOne.votes.includes(authedUser) || question.optionTwo.votes.includes(authedUser),
           selectedAnswer: (question.optionOne.votes.includes(authedUser) ? 'optionOne' : (question.optionTwo.votes.includes(authedUser) ? 'optionTwo' : undefined)) as 'optionOne' | 'optionTwo' | undefined,
           optionOne: {
@@ -43,7 +71,7 @@ async function loadPolls(questions: { [key: string]: Question }, users: { [key: 
       }
       return {
         question,
-        expand: false,
+        expand: persistedExpand ?? false,
         answered: question.optionOne.votes.includes(authedUser) || question.optionTwo.votes.includes(authedUser),
         selectedAnswer: (question.optionOne.votes.includes(authedUser) ? 'optionOne' : (question.optionTwo.votes.includes(authedUser) ? 'optionTwo' : undefined)) as 'optionOne' | 'optionTwo' | undefined,
         optionOne: {
@@ -78,6 +106,7 @@ async function loadPolls(questions: { [key: string]: Question }, users: { [key: 
 const pollsApi = createApi({
   reducerPath: "pollsApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/" }), // not needed here since we call local functions
+  tagTypes: ["Polls"],
   endpoints: (builder) => ({
     buildPolls: builder.query<PollsState, { questions: { [key: string]: Question }, users: { [key: string]: User }, initialState?: { [key: string]: Poll } }>({
       async queryFn({ questions, users, initialState }) {
@@ -87,22 +116,21 @@ const pollsApi = createApi({
           return { error: err };
         }
       },
+      providesTags: ["Polls"],
     }),
-    setExpanded: builder.mutation<{ [key: string]: Poll }, { pollId: string, expanded: boolean }>({
-      queryFn({ pollId, expanded }: { pollId: string, expanded: boolean }, { getState }: any) {
-        const state = getState() as { pollsApi: { [key: string]: Poll } };
-        const buildPolls = Object.values(state.pollsApi.queries)
-          .sort((a, b) => (b.fulfilledTimeStamp || 0) - (a.fulfilledTimeStamp || 0))
-          .find(value => value.endpointName === "buildPolls" && value.status === "fulfilled");
-        const currentPoll = buildPolls?.data?.entities[pollId];
-        if (!currentPoll) {
-          console.warn(`Poll with id ${pollId} not found`);
-          return { data: buildPolls?.data?.entities || {} };
-        }
-        const mutatedPoll = { ...currentPoll, expand: expanded };
-        const updatedEntities = { ...buildPolls?.data?.entities, [pollId]: mutatedPoll };
-        return { data: updatedEntities || {} };
+    setExpanded: builder.mutation<void, { pollId: string, expanded: boolean }>({
+      queryFn({ pollId, expanded }: { pollId: string, expanded: boolean }) {
+        const pollsUiState = readPollsUiState();
+        writePollsUiState({
+          ...pollsUiState,
+          [pollId]: {
+            ...(pollsUiState[pollId] ?? { expand: false }),
+            expand: expanded,
+          },
+        });
+        return { data: undefined };
       },
+      invalidatesTags: ["Polls"],
     }),
   }),
 

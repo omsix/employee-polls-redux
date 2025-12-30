@@ -15,7 +15,6 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CheckIcon from '@mui/icons-material/Check';
 import { addAnswerToQuestion } from "../../utils/questions/questions";
 import { addAnswerToUser } from "../../utils/login/users";
-import { setExpanded } from "../../utils/polls/pollsAPI";
 import { useSetExpandedMutation } from "../../utils/polls/pollsAPI";
 
 export interface PollDetailsComponentProps {
@@ -24,7 +23,6 @@ export interface PollDetailsComponentProps {
 }
 
 export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentProps> = ({ poll }) => {
-  const [expand, setExpand] = useState(poll.expand);
   const [open, setOpen] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<'optionOne' | 'optionTwo' | undefined>(poll.selectedAnswer);
 
@@ -33,8 +31,7 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
 
   const dispatch = useAppDispatch();
   const toggleExpand = () => {
-    setExpand(!expand);
-    triggerSetExpanded({ pollId: poll.question.id, expanded: !expand });
+    triggerSetExpanded({ pollId: poll.question.id, expanded: !poll.expand });
   };
   const user = users.entities[poll.question.author];
   const authedUser = useAppSelector((state) => state.authedUser);
@@ -62,7 +59,7 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
     <>
       <Card className={styles["poll-details-component"]}>
         <CardActionArea onClick={toggleExpand}>
-          {expand && (<CardHeader
+          {poll.expand && (<CardHeader
             avatar={
               <Avatar className={styles["poll-details-avatar-img"]} src={user.avatarURL} aria-label={user.name} >
                 {user.name.charAt(0)}
@@ -71,7 +68,7 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
             title={` By ${user.name}`}
             subheader={`Asked On ${new Date(poll.question.timestamp).toLocaleDateString()}`}
           />)}
-          {!expand && (<CardHeader
+          {!poll.expand && (<CardHeader
             avatar={
               <Avatar aria-label={user.name} className={styles["poll-details-avatar-letter"]}>
                 {user.name.charAt(0)}
@@ -81,7 +78,7 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
             subheader={`Asked On ${new Date(poll.question.timestamp).toLocaleDateString()}`}
           />)}
         </CardActionArea>
-        <Collapse in={expand} timeout="auto" unmountOnExit>
+        <Collapse in={poll.expand} timeout="auto" unmountOnExit>
           <CardContent>
             {!poll.answered && <FormControl>
               <FormLabel id="content-radio-buttons-group-label">Would You Rather</FormLabel>
@@ -127,7 +124,7 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
 
           </CardContent>
         </Collapse>
-        {!poll.answered && expand && <CardActions>
+        {!poll.answered && poll.expand && <CardActions>
           <IconButton onClick={() => setOpen(!open)}>
             <HowToVoteIcon /> Vote
           </IconButton>
