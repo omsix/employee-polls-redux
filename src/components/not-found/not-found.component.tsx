@@ -6,8 +6,12 @@ export interface NotFoundComponentProps { }
 export const NotFoundComponent: React.FunctionComponent<NotFoundComponentProps> = () => {
   const [top, setTop] = useState<number>();
   const [left, setLeft] = useState<number>(0);
-  return (<div className={styles.notFound}>
-    <div className={styles.text}>
+  return (<div className={styles['not-found-component']} 
+    onMouseMove={(event: React.MouseEvent) => {
+    setTop(event.pageY);
+    setLeft(event.pageX);
+  }}>
+    <div className={styles['text']}>
       <h1>404</h1>
       <h2>Uh, Ohh</h2>
       <h3>
@@ -15,12 +19,8 @@ export const NotFoundComponent: React.FunctionComponent<NotFoundComponentProps> 
       </h3>
     </div>
     <div
-      className={styles.torch}
+      className={styles['torch']}
       style={{ top: top, left: left }}
-      onMouseMove={(event: React.MouseEvent) => {
-        setTop(event.pageY);
-        setLeft(event.pageX);
-      }}
     ></div>
   </div>);
 };

@@ -1,6 +1,6 @@
 .not-found-component {
     height: 100%;
-    background: url("../../assets/404.jpg") no-repeat left top;
+    background: url("/assets/404.jpg") no-repeat left top;
     background-size: cover;
     overflow: hidden;
     display: flex;
@@ -19,7 +19,7 @@
     font-size: 15em;
     text-align: center;
     text-shadow: -5px 5px 0px rgba(0, 0, 0, 0.7),
-        -10px 10px 0px rgba(0, 0, 0, 0.4), -15px 15px 0px rgba(0, 0, 0, 0.2);
+        -10px 10px 0px rgba(0, 0, 0, 0.4), -15px 15px 0px rgba(154, 186, 214, 0.2);
     font-family: monospace;
     font-weight: bold;
 }
@@ -27,7 +27,7 @@
 .text h2 {
     color: black;
     font-size: 5em;
-    text-shadow: -5px 5px 0px rgba(0, 0, 0, 0.7);
+    text-shadow: -5px 5px 0px rgba(154, 186, 214, 0.2);
     text-align: center;
     margin-top: -150px;
     font-family: monospace;
@@ -52,7 +52,7 @@
     opacity: 1;
     border-radius: 50%;
     position: fixed;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .torch:after {

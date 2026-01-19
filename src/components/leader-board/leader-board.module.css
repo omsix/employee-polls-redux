@@ -1,3 +1,33 @@
 .leader-board-component {
-	
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.leader-board-entry {
+    width: auto;
+}
+
+.leader-board-entry-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.leader-board-entry-text {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.leader-board-entry-score {
+    min-width: 40px;
+    display: flex;
+    justify-content: flex-end;
 }

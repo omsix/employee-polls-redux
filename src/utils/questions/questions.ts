@@ -1,8 +1,9 @@
 
 import { PayloadAction } from '@reduxjs/toolkit';
 import { QuestionsState } from '../../state-tree/state-tree';
-import { _saveQuestionAnswer } from '../../data/data';
+import { _saveQuestion, _saveQuestionAnswer } from '../../data/data';
 import { createAppSlice } from '../../app/createAppSlice';
+import { Question } from '../../state-tree/model';
 
 const initialState: QuestionsState = {
     entities: {},
@@ -21,6 +22,25 @@ export const questionsSlice = createAppSlice({
         receiveQuestions: create.reducer((_, action: PayloadAction<QuestionsState>) => {
             return action.payload;
         }),
+        addQuestion: create.asyncThunk(
+            async ({ optionOneText, optionTwoText, author }: { optionOneText: string; optionTwoText: string; author: string }) => {
+                const createdQuestion = await _saveQuestion({ optionOneText, optionTwoText, author });
+                return createdQuestion as Question;
+            },
+            {
+                pending: (state) => {
+                    state.status = "loading";
+                },
+                fulfilled: (state, action) => {
+                    state.entities[action.payload.id] = action.payload;
+                    state.status = "idle";
+                    return state;
+                },
+                rejected: (state) => {
+                    state.status = "failed";
+                },
+            },
+        ),
         addAnswerToQuestion: create.asyncThunk(
             async ({ authedUser, qid, answer }: { authedUser: string; qid: string; answer: string }) => {
                 await _saveQuestionAnswer({
@@ -52,5 +72,5 @@ export const questionsSlice = createAppSlice({
     }
 });
 
-export const { receiveQuestions, addAnswerToQuestion } = questionsSlice.actions;
+export const { receiveQuestions, addQuestion, addAnswerToQuestion } = questionsSlice.actions;
 export default questionsSlice.reducer;
