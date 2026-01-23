@@ -18,6 +18,12 @@ import storage from 'redux-persist/lib/storage';
 import loggerMiddleware from "./loggerMiddleware";
 import pollsApi from "../utils/polls/pollsAPI"
 
+const isTestEnv =
+  (typeof import.meta !== "undefined" &&
+    typeof import.meta.env !== "undefined" &&
+    import.meta.env.MODE === "test") ||
+  process.env.NODE_ENV === "test";
+
 const persistConfig = {
   key: 'root',
   storage,
@@ -40,17 +46,20 @@ export type RootState = ReturnType<typeof rootReducer>
 
 // The store setup is wrapped in `makeStore` to allow reuse
 // when setting up tests that need the same store config
-export const makeStore = () => {
+export const makeStore = (preloadedState?: Partial<RootState>) => {
   const store = configureStore({
     reducer: persistedReducer,
+    preloadedState: preloadedState as any,
     // Adding the api middleware enables caching, invalidation, polling,
     // and other useful features of `rtk-query`.
     middleware: (getDefaultMiddleware) => {
-      return getDefaultMiddleware({
+      const baseMiddleware = getDefaultMiddleware({
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(pollsApi.middleware).concat(loggerMiddleware)
+      }).concat(pollsApi.middleware)
+
+      return isTestEnv ? baseMiddleware : baseMiddleware.concat(loggerMiddleware)
     },
   })
   // configure listeners using the provided defaults

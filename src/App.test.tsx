@@ -1,154 +1,135 @@
-import { act, screen } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
+import { MemoryRouter } from "react-router-dom"
+import { vi } from "vitest"
 import App from "./App"
 import { renderWithProviders } from "./utils/test-utils"
 
-test("App should have correct initial render", () => {
-  renderWithProviders(<App />)
+import { getUsers } from "./components/login-page/loginAPI"
 
-  const countLabel = screen.getByLabelText<HTMLLabelElement>("Count")
-
-  const incrementValueInput = screen.getByLabelText<HTMLInputElement>(
-    "Set increment amount",
+vi.mock("./components/login-page/loginAPI", async () => {
+  const actual = await vi.importActual<typeof import("./components/login-page/loginAPI")>(
+    "./components/login-page/loginAPI",
   )
-
-  // The app should be rendered correctly
-  expect(screen.getByText(/learn/i)).toBeInTheDocument()
-
-  // Initial state: count should be 0, incrementValue should be 2
-  expect(countLabel).toHaveTextContent("0")
-  expect(incrementValueInput).toHaveValue(2)
+  return {
+    ...actual,
+    getUsers: vi.fn(),
+  }
 })
 
-test("Increment value and Decrement value should work as expected", async () => {
-  const { user } = renderWithProviders(<App />)
+const getUsersMock = vi.mocked(getUsers)
 
-  const countLabel = screen.getByLabelText<HTMLLabelElement>("Count")
-
-  const incrementValueButton =
-    screen.getByLabelText<HTMLButtonElement>("Increment value")
-
-  const decrementValueButton =
-    screen.getByLabelText<HTMLButtonElement>("Decrement value")
-
-  // Click on "+" => Count should be 1
-  await user.click(incrementValueButton)
-  expect(countLabel).toHaveTextContent("1")
-
-  // Click on "-" => Count should be 0
-  await user.click(decrementValueButton)
-  expect(countLabel).toHaveTextContent("0")
-})
-
-test("Add Amount should work as expected", async () => {
-  const { user } = renderWithProviders(<App />)
-
-  const countLabel = screen.getByLabelText<HTMLLabelElement>("Count")
-
-  const incrementValueInput = screen.getByLabelText<HTMLInputElement>(
-    "Set increment amount",
-  )
-
-  const addAmountButton = screen.getByText<HTMLButtonElement>("Add Amount")
-
-  // "Add Amount" button is clicked => Count should be 2
-  await user.click(addAmountButton)
-  expect(countLabel).toHaveTextContent("2")
-
-  // incrementValue is 2, click on "Add Amount" => Count should be 4
-  await user.clear(incrementValueInput)
-  await user.type(incrementValueInput, "2")
-  await user.click(addAmountButton)
-  expect(countLabel).toHaveTextContent("4")
-
-  // [Negative number] incrementValue is -1, click on "Add Amount" => Count should be 3
-  await user.clear(incrementValueInput)
-  await user.type(incrementValueInput, "-1")
-  await user.click(addAmountButton)
-  expect(countLabel).toHaveTextContent("3")
-})
-
-it("Add Async should work as expected", async () => {
-  vi.useFakeTimers({ shouldAdvanceTime: true })
-
-  const { user } = renderWithProviders(<App />)
-
-  const addAsyncButton = screen.getByText<HTMLButtonElement>("Add Async")
-
-  const countLabel = screen.getByLabelText<HTMLLabelElement>("Count")
-
-  const incrementValueInput = screen.getByLabelText<HTMLInputElement>(
-    "Set increment amount",
-  )
-
-  await user.click(addAsyncButton)
-
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(500)
+describe("App", () => {
+  beforeEach(() => {
+    localStorage.clear()
+    getUsersMock.mockReset()
+    getUsersMock.mockResolvedValue({ entities: {}, status: "idle" })
   })
 
-  // "Add Async" button is clicked => Count should be 2
-  expect(countLabel).toHaveTextContent("2")
+  test("Logged out: renders the login page", async () => {
+    renderWithProviders(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          authedUser: { name: "", expiresAt: null, status: "idle" },
+        },
+      },
+    )
 
-  await user.clear(incrementValueInput)
-  await user.type(incrementValueInput, "2")
-
-  await user.click(addAsyncButton)
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(500)
+    expect(await screen.findByText(/welcome to employee polls/i)).toBeInTheDocument()
   })
 
-  // incrementValue is 2, click on "Add Async" => Count should be 4
-  expect(countLabel).toHaveTextContent("4")
+  test("Logged in: renders the menu toolbar and app shell", async () => {
+    localStorage.setItem("authedUser", "sarahedo")
 
-  await user.clear(incrementValueInput)
-  await user.type(incrementValueInput, "-1")
-  await user.click(addAsyncButton)
+    renderWithProviders(
+      <MemoryRouter initialEntries={["/"]}>
+        <App />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          authedUser: { name: "sarahedo", expiresAt: Date.now() + 60_000, status: "idle" },
+          users: { entities: {}, status: "idle" },
+          questions: { entities: {}, status: "idle" },
+        },
+      },
+    )
 
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(500)
+    expect(await screen.findByText(/employee polls/i)).toBeInTheDocument()
   })
 
-  // [Negative number] incrementValue is -1, click on "Add Async" => Count should be 3
-  expect(countLabel).toHaveTextContent("3")
+  test("Loads users on mount (calls getUsers and dispatches receiveUsers)", async () => {
+    getUsersMock.mockResolvedValue({
+      entities: {
+        sarahedo: {
+          id: "sarahedo",
+          name: "Sarah Edo",
+          avatarURL: "",
+          answers: {},
+          questions: [],
+        },
+      },
+      status: "idle",
+    })
 
-  vi.useRealTimers()
-})
+    const { store } = renderWithProviders(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          authedUser: { name: "", expiresAt: null, status: "idle" },
+        },
+      },
+    )
 
-test("Add If Odd should work as expected", async () => {
-  const { user } = renderWithProviders(<App />)
+    await waitFor(() => {
+      expect(getUsersMock).toHaveBeenCalledTimes(1)
+    })
 
-  const countLabel = screen.getByLabelText<HTMLLabelElement>("Count")
+    await waitFor(() => {
+      expect(store.getState().users.entities["sarahedo"]?.name).toBe("Sarah Edo")
+    })
+  })
 
-  const addIfOddButton = screen.getByText<HTMLButtonElement>("Add If Odd")
+  test("Expired session: dispatches logout and shows login page", async () => {
+    localStorage.setItem("authedUser", "sarahedo")
 
-  const incrementValueInput = screen.getByLabelText<HTMLInputElement>(
-    "Set increment amount",
-  )
+    const { store } = renderWithProviders(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          authedUser: { name: "sarahedo", expiresAt: Date.now() - 1, status: "idle" },
+        },
+      },
+    )
 
-  const incrementValueButton =
-    screen.getByLabelText<HTMLButtonElement>("Increment value")
+    await waitFor(() => {
+      expect(store.getState().authedUser.name).toBeNull()
+    })
 
-  // "Add If Odd" button is clicked => Count should stay 0
-  await user.click(addIfOddButton)
-  expect(countLabel).toHaveTextContent("0")
+    expect(await screen.findByText(/welcome to employee polls/i)).toBeInTheDocument()
+  })
 
-  // Click on "+" => Count should be updated to 1
-  await user.click(incrementValueButton)
-  expect(countLabel).toHaveTextContent("1")
+  test("Non-expired session: does not logout", async () => {
+    localStorage.setItem("authedUser", "sarahedo")
 
-  // "Add If Odd" button is clicked => Count should be updated to 3
-  await user.click(addIfOddButton)
-  expect(countLabel).toHaveTextContent("3")
+    const { store } = renderWithProviders(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          authedUser: { name: "sarahedo", expiresAt: Date.now() + 60_000, status: "idle" },
+        },
+      },
+    )
 
-  // incrementValue is 1, click on "Add If Odd" => Count should be updated to 4
-  await user.clear(incrementValueInput)
-  await user.type(incrementValueInput, "1")
-  await user.click(addIfOddButton)
-  expect(countLabel).toHaveTextContent("4")
-
-  // click on "Add If Odd" => Count should stay 4
-  await user.clear(incrementValueInput)
-  await user.type(incrementValueInput, "-1")
-  await user.click(addIfOddButton)
-  expect(countLabel).toHaveTextContent("4")
+    await waitFor(() => {
+      expect(store.getState().authedUser.name).toBe("sarahedo")
+    })
+  })
 })

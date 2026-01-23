@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CircularTextComponent > matches snapshot 1`] = `
+<DocumentFragment>
+  <div
+    style="position: relative; width: 80px; height: 80px;"
+  >
+    <div
+      style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%;"
+    >
+      <div
+        class="MuiAvatar-root MuiAvatar-circular css-fmeqll-MuiAvatar-root"
+      >
+        <img
+          alt="Sarah Edo"
+          class="MuiAvatar-img css-1su80sj-MuiAvatar-img"
+          src="/avatars/sarah.png"
+        />
+      </div>
+    </div>
+    <svg
+      height="80"
+      style="position: absolute; top: 0px; left: 0px;"
+      viewBox="0 0 80 80"
+      width="80"
+    >
+      <defs>
+        <path
+          d="
+              M 10, 40
+              a 30,30 0 0,0 60,0
+            "
+          id="circlePath-4fzzzxjyl"
+        />
+      </defs>
+      <text
+        fill="var(--AppBar-color)"
+        font-size="12"
+        font-weight="bold"
+        text-anchor="middle"
+      >
+        <textpath
+          href="#circlePath-4fzzzxjyl"
+          startOffset="50%"
+        >
+          Sarah Edo
+        </textpath>
+      </text>
+    </svg>
+  </div>
+</DocumentFragment>
+`;
