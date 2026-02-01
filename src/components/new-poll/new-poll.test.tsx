@@ -3,7 +3,7 @@ import { vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { renderWithProviders } from "../../utils/test-utils";
 import { NewPollComponent } from "./new-poll.component";
-import * as questionsSlice from "../../utils/questions/questions";
+import * as dataAPI from "../../data/data";
 
 const mockNavigate = vi.fn();
 
@@ -137,19 +137,13 @@ describe("NewPollComponent", () => {
   });
 
   it("submits form and navigates to home on successful submission", async () => {
-    vi.spyOn(questionsSlice, "addQuestion").mockImplementation(
-      () =>
-        ({
-          type: "questions/addQuestion/fulfilled",
-          payload: {
-            id: "new-question-id",
-            author: "omarcisse",
-            timestamp: Date.now(),
-            optionOne: { votes: [], text: "First option" },
-            optionTwo: { votes: [], text: "Second option" },
-          },
-        }) as any,
-    );
+    vi.spyOn(dataAPI, "_saveQuestion").mockResolvedValue({
+      id: "new-question-id",
+      author: "omarcisse",
+      timestamp: Date.now(),
+      optionOne: { votes: [], text: "First option" },
+      optionTwo: { votes: [], text: "Second option" },
+    });
 
     renderWithProviders(
       <MemoryRouter>
@@ -178,7 +172,13 @@ describe("NewPollComponent", () => {
   });
 
   it("trims whitespace from options before submission", async () => {
-    const addQuestionSpy = vi.spyOn(questionsSlice, "addQuestion");
+    const saveQuestionSpy = vi.spyOn(dataAPI, "_saveQuestion").mockResolvedValue({
+      id: "new-question-id",
+      author: "omarcisse",
+      timestamp: Date.now(),
+      optionOne: { votes: [], text: "First option" },
+      optionTwo: { votes: [], text: "Second option" },
+    });
 
     renderWithProviders(
       <MemoryRouter>
@@ -202,7 +202,7 @@ describe("NewPollComponent", () => {
     fireEvent.submit(form!);
 
     await waitFor(() => {
-      expect(addQuestionSpy).toHaveBeenCalledWith({
+      expect(saveQuestionSpy).toHaveBeenCalledWith({
         optionOneText: "First option",
         optionTwoText: "Second option",
         author: "omarcisse",

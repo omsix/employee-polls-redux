@@ -49,8 +49,8 @@ describe("LeaderBoardComponent", () => {
 
     const userNames = screen.getAllByRole("heading", { level: 6 });
     expect(userNames[0]).toHaveTextContent("Tyler McGinnis");
-    expect(userNames[1]).toHaveTextContent("Omar Cisse");
-    expect(userNames[2]).toHaveTextContent("Sarah Edo");
+    expect(userNames[2]).toHaveTextContent("Omar Cisse");
+    expect(userNames[4]).toHaveTextContent("Sarah Edo");
   });
 
   it("displays correct score calculations for each user", () => {

@@ -1,14 +1,55 @@
 import { screen, fireEvent } from "@testing-library/react";
+import { vi } from "vitest";
 import { DashboardComponent } from "./dashboard.component";
 import { renderWithProviders } from "../../utils/test-utils";
+import * as pollsAPI from "../../utils/polls/pollsAPI";
+
+vi.mock("../../utils/polls/pollsAPI", async () => {
+  const actual = await vi.importActual<typeof import("../../utils/polls/pollsAPI")>("../../utils/polls/pollsAPI");
+  return {
+    ...actual,
+    useBuildPollsQuery: vi.fn(),
+  };
+});
+
+const useBuildPollsQueryMock = vi.mocked(pollsAPI.useBuildPollsQuery);
+
+function buildPollsFromData(questions: any, users: any, authedUser: string) {
+  const totalUsers = Object.keys(users).length;
+  const polls: any = {};
+
+  Object.values(questions).forEach((question: any) => {
+    const optionOneVotes = question.optionOne.votes.length;
+    const optionTwoVotes = question.optionTwo.votes.length;
+    const answered = question.optionOne.votes.includes(authedUser) || question.optionTwo.votes.includes(authedUser);
+    const selectedAnswer = question.optionOne.votes.includes(authedUser) ? "optionOne" : question.optionTwo.votes.includes(authedUser) ? "optionTwo" : undefined;
+
+    polls[question.id] = {
+      question,
+      expand: false,
+      answered,
+      selectedAnswer,
+      optionOne: {
+        voted: optionOneVotes,
+        percentage: `${Math.round((optionOneVotes / totalUsers) * 100)}%`,
+      },
+      optionTwo: {
+        voted: optionTwoVotes,
+        percentage: `${Math.round((optionTwoVotes / totalUsers) * 100)}%`,
+      },
+    };
+  });
+
+  return { entities: polls, status: "idle" };
+}
 
 describe("DashboardComponent", () => {
   beforeEach(() => {
     localStorage.clear();
+    useBuildPollsQueryMock.mockReset();
   });
 
   it("matches snapshot when user omarcisse is logged in", async () => {
-    localStorage.clear();
     localStorage.setItem("authedUser", "omarcisse");
 
     const users = {
@@ -19,7 +60,7 @@ describe("DashboardComponent", () => {
         answers: {
           xj352vofupe1dqz9emx13r: "optionOne",
           vthrdm985a262al8qx3do: "optionTwo",
-          "6ni6ok3ym7mf1p33lnez": "optionOne",
+          "6ni6ok3ym7mf1p33lnez": "optionTwo",
         },
         questions: ["6ni6ok3ym7mf1p33lnez", "xj352vofupe1dqz9emx13r"],
       },
@@ -29,7 +70,7 @@ describe("DashboardComponent", () => {
         avatarURL: "/avatars/sarah.png",
         answers: {
           "8xf0y6ziyjabvozdd253nd": "optionOne",
-          "6ni6ok3ym7mf1p33lnez": "optionOne",
+          "6ni6ok3ym7mf1p33lnez": "optionTwo",
           am8ehyc8byjqgar0jgpub9: "optionTwo",
           loxhs1bqm25b708cmbf3g: "optionTwo",
         },
@@ -137,6 +178,12 @@ describe("DashboardComponent", () => {
       },
     };
 
+    const pollsData = buildPollsFromData(questions, users, "omarcisse");
+    useBuildPollsQueryMock.mockReturnValue({
+      data: pollsData,
+      isLoading: false,
+    } as any);
+
     const { asFragment } = renderWithProviders(<DashboardComponent />, {
       preloadedState: {
         authedUser: {
@@ -154,6 +201,11 @@ describe("DashboardComponent", () => {
   });
 
   it("displays loading state while polls are being fetched", () => {
+    useBuildPollsQueryMock.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+    } as any);
+
     renderWithProviders(<DashboardComponent />, {
       preloadedState: {
         authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
@@ -175,6 +227,11 @@ describe("DashboardComponent", () => {
         questions: [],
       },
     };
+
+    useBuildPollsQueryMock.mockReturnValue({
+      data: { entities: {}, status: "idle" },
+      isLoading: false,
+    } as any);
 
     renderWithProviders(<DashboardComponent />, {
       preloadedState: {
@@ -199,6 +256,13 @@ describe("DashboardComponent", () => {
         answers: { xj352vofupe1dqz9emx13r: "optionOne" },
         questions: [],
       },
+      tylermcginnis: {
+        id: "tylermcginnis",
+        name: "Tyler McGinnis",
+        avatarURL: "/avatars/tyler.png",
+        answers: {},
+        questions: [],
+      },
     };
 
     const questions = {
@@ -215,7 +279,39 @@ describe("DashboardComponent", () => {
           text: "deploy to production once every month",
         },
       },
+      vthrdm985a262al8qx3do: {
+        id: "vthrdm985a262al8qx3do",
+        author: "tylermcginnis",
+        timestamp: 1489579767190,
+        optionOne: {
+          votes: [],
+          text: "take a course on ReactJS",
+        },
+        optionTwo: {
+          votes: [],
+          text: "take a course on unit testing with Jest",
+        },
+      },
+      "6ni6ok3ym7mf1p33lnez": {
+        id: "6ni6ok3ym7mf1p33lnez",
+        author: "tylermcginnis",
+        timestamp: 1468479767190,
+        optionOne: {
+          votes: [],
+          text: "become a backend developer",
+        },
+        optionTwo: {
+          votes: [],
+          text: "become a frontend developer",
+        },
+      },
     };
+
+    const pollsData = buildPollsFromData(questions, users, "omarcisse");
+    useBuildPollsQueryMock.mockReturnValue({
+      data: pollsData,
+      isLoading: false,
+    } as any);
 
     renderWithProviders(<DashboardComponent />, {
       preloadedState: {
@@ -231,9 +327,13 @@ describe("DashboardComponent", () => {
     expect(pendingTab).toHaveAttribute("aria-selected", "true");
     expect(completedTab).toHaveAttribute("aria-selected", "false");
 
+    await screen.findByText(/take a course on ReactJS/i);
+    expect(screen.getByText(/become a backend developer/i)).toBeInTheDocument();
+
     fireEvent.click(completedTab);
 
     await screen.findByText(/deploy to production once every two weeks/i);
     expect(completedTab).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByText(/take a course on ReactJS/i)).not.toBeInTheDocument();
   });
 });

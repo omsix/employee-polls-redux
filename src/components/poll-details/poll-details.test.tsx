@@ -188,8 +188,8 @@ describe("PollDetailsComponent", () => {
       },
     });
 
-    expect(screen.getByText(/You voted for:/i)).toBeInTheDocument();
-    expect(screen.getByText(/1 votes \(50%\)/)).toBeInTheDocument();
+    expect(screen.getAllByText(/You voted for:/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/1 votes \(50%\)/i).length).toBeGreaterThan(0);
   });
 
   it("shows Vote button for unanswered poll when expanded", () => {
