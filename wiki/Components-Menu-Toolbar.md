@@ -1,0 +1,243 @@
+# Menu Toolbar Component
+
+The Menu Toolbar is the main navigation bar displayed at the top of the application when a user is authenticated.
+
+## 📍 Location
+
+`src/components/menu-toolbar/menu-toolbar.component.tsx`
+
+## 🎯 Purpose
+
+- Provide top navigation bar with branding
+- Display current user information with avatar
+- Offer navigation menu to main sections
+- Enable logout functionality
+
+## 📋 Component Signature
+
+```typescript
+const MenuToolbarComponent: React.FunctionComponent = () => {
+  // ...
+}
+
+export default MenuToolbarComponent;
+```
+
+## 🔧 Props
+
+This component accepts no props. All data is retrieved from Redux state and React Router.
+
+## 🏪 Redux Integration
+
+### State Used
+
+| Selector | Purpose |
+|----------|---------|
+| `state.authedUser.name` | Current user's ID |
+| `state.users.entities` | User details (name, avatar) |
+
+### Actions Dispatched
+
+| Action | Purpose |
+|--------|---------|
+| `logout` | Clear authentication state |
+
+## 🖼️ UI Structure
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [≡]     Page Title              [Avatar with Name]         │
+│                                                             │
+│  Menu:                                                      │
+│  ┌────────────────┐                                        │
+│  │ Dashboard      │                                        │
+│  │ New Poll       │                                        │
+│  │ Leaderboard    │                                        │
+│  │ ────────────── │                                        │
+│  │ Logout         │                                        │
+│  └────────────────┘                                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🔄 Navigation Links
+
+| Menu Item | Route | Description |
+|-----------|-------|-------------|
+| Dashboard | `/` | Main poll view |
+| New Poll | `/add` | Create new poll |
+| Leaderboard | `/leaderboard` | User rankings |
+| Logout | N/A | Clears session, redirects to login |
+
+## 📝 Key Implementation Details
+
+### Menu State
+
+```typescript
+const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+const open = Boolean(anchorEl);
+
+const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  setAnchorEl(event.currentTarget);
+};
+
+const handleClose = () => {
+  setAnchorEl(null);
+};
+```
+
+### Dynamic Page Title
+
+The title changes based on the current route:
+
+```typescript
+const location = useLocation();
+
+const getPageTitle = () => {
+  switch (location.pathname) {
+    case "/":
+      return "Dashboard";
+    case "/add":
+      return "New Poll";
+    case "/leaderboard":
+      return "Leaderboard";
+    default:
+      if (location.pathname.startsWith("/questions/")) {
+        return "Poll Details";
+      }
+      return "Employee Polls";
+  }
+};
+```
+
+### User Avatar with Circular Text
+
+Uses the `CircularText` component to display the user's name around their avatar:
+
+```typescript
+<CircularText text={user.name} radius={40} fontSize={10}>
+  <Avatar src={user.avatarURL} alt={user.name} />
+</CircularText>
+```
+
+### Navigation Handler
+
+```typescript
+const navigate = useNavigate();
+
+const handleNavigate = (path: string) => {
+  handleClose();
+  navigate(path);
+};
+```
+
+### Logout Handler
+
+```typescript
+const handleLogout = () => {
+  handleClose();
+  localStorage.removeItem("authedUser");
+  dispatch(logout());
+  navigate("/login");
+};
+```
+
+## 🎨 Styling
+
+Uses CSS Modules for scoped styling:
+
+```typescript
+import styles from "./menu-toolbar.module.css";
+
+<AppBar className={styles["menu-toolbar"]}>
+  {/* content */}
+</AppBar>
+```
+
+## 🧪 Testing
+
+**Test File:** `src/components/menu-toolbar/menu-toolbar.test.tsx`
+
+### Test Cases
+
+1. **Renders Title and User** - Displays app title and user information
+2. **Opens Menu** - Menu opens on hamburger click
+3. **Navigation - Home** - Clicking Dashboard navigates to `/`
+4. **Navigation - Logout** - Logout clears session and redirects
+
+### Example Test
+
+```typescript
+it("opens menu when menu button is clicked", async () => {
+  renderWithProviders(<MenuToolbarComponent />, {
+    preloadedState: {
+      authedUser: { name: "testuser", expiresAt: Date.now() + 60000, status: "idle" },
+      users: {
+        entities: {
+          testuser: { id: "testuser", name: "Test User", avatarURL: "/avatar.png" },
+        },
+        status: "idle",
+      },
+    },
+  });
+
+  const menuButton = screen.getByLabelText(/menu/i);
+  fireEvent.click(menuButton);
+
+  await waitFor(() => {
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    expect(screen.getByText(/new poll/i)).toBeInTheDocument();
+    expect(screen.getByText(/leaderboard/i)).toBeInTheDocument();
+    expect(screen.getByText(/logout/i)).toBeInTheDocument();
+  });
+});
+```
+
+```typescript
+it("logs out and navigates to login when Logout menu item is clicked", async () => {
+  renderWithProviders(<MenuToolbarComponent />, { preloadedState });
+
+  // Open menu
+  fireEvent.click(screen.getByLabelText(/menu/i));
+
+  // Click logout
+  await waitFor(() => {
+    fireEvent.click(screen.getByText(/logout/i));
+  });
+
+  // Verify logout action dispatched and navigation occurred
+});
+```
+
+## 🔗 Related Components
+
+- **[CircularText](Components-Navigation.md#circular-text)** - User name display around avatar
+- **[App](../src/App.tsx)** - Parent that conditionally renders toolbar
+
+## 📚 Dependencies
+
+### External
+- `@mui/material` - AppBar, Toolbar, IconButton, Menu, MenuItem, Avatar, Typography
+- `@mui/icons-material` - MenuIcon
+- `react-router-dom` - useNavigate, useLocation
+
+### Internal
+- `CircularText` - SVG circular text component
+- `logout` - Redux action
+- `useAppDispatch`, `useAppSelector` - Redux hooks
+
+## 🎯 Features
+
+| Feature | Implementation |
+|---------|----------------|
+| Responsive Title | Changes based on current route |
+| User Display | Avatar with circular name text |
+| Dropdown Menu | MUI Menu with navigation items |
+| Session Management | Logout clears localStorage and Redux |
+
+## 📱 Responsive Behavior
+
+The toolbar uses MUI's responsive components:
+- `AppBar` provides sticky positioning
+- `Toolbar` handles content alignment
+- Menu automatically positions relative to anchor

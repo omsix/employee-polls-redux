@@ -66,11 +66,11 @@ let questions: any = {
     author: 'omarcisse',
     timestamp: 1468479767190,
     optionOne: {
-      votes: [],
+      votes: ['omarcisse', 'sarahedo'],
       text: 'hire more frontend developers',
     },
     optionTwo: {
-      votes: ['omarcisse', 'sarahedo'],
+      votes: [],
       text: 'hire more backend developers'
     }
   },
@@ -134,7 +134,13 @@ function generateUID() {
 
 export function _getUsers() {
   return new Promise((resolve) => {
-    setTimeout(() => resolve({ ...users }), 1000)
+    // Filter out passwords before returning user data
+    const sanitizedUsers = Object.entries(users).reduce((acc, [key, user]) => {
+      const { password, ...userWithoutPassword } = user;
+      acc[key] = userWithoutPassword;
+      return acc;
+    }, {} as Record<string, any>);
+    setTimeout(() => resolve(sanitizedUsers), 1000)
   })
 }
 
@@ -164,6 +170,7 @@ export function _saveQuestion(question: { optionOneText: string, optionTwoText: 
   return new Promise((resolve, reject) => {
     if (!question.optionOneText || !question.optionTwoText || !question.author) {
       reject("Please provide optionOneText, optionTwoText, and author");
+      return;
     }
 
     const formattedQuestion = formatQuestion(question)
@@ -182,6 +189,7 @@ export function _saveQuestionAnswer({ authedUser, qid, answer }: { authedUser: s
   return new Promise((resolve, reject) => {
     if (!authedUser || !qid || !answer) {
       reject("Please provide authedUser, qid, and answer");
+      return;
     }
 
     setTimeout(() => {

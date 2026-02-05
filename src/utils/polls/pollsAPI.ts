@@ -40,10 +40,14 @@ export const fetchUsers: () => Promise<{ [key: string]: User }> = () =>
  * Builds a PollsState from questions and users,
  * filtering according to a predicate (answered or not).
  */
+function calculatePercentage(votes: number, total: number): string {
+  return total > 0 ? `${Math.round((votes / total) * 100)}%` : '0%';
+}
+
 async function loadPolls(questions: { [key: string]: Question }, users: { [key: string]: User },
   initialState?: { [key: string]: Poll }
 ): Promise<PollsState> {
-  const authedUser: string = localStorage.getItem('authedUser') as string;
+  const authedUser: string | null = localStorage.getItem('authedUser');
   const totalUsers = Object.values(users).length;
   const pollsUiState = readPollsUiState();
 
@@ -53,34 +57,37 @@ async function loadPolls(questions: { [key: string]: Question }, users: { [key: 
       const optionTwoVotes = question.optionTwo.votes.length;
       const poll = initialState?.[question.id];
       const persistedExpand = pollsUiState?.[question.id]?.expand;
+      const isAnswered = authedUser ? (question.optionOne.votes.includes(authedUser) || question.optionTwo.votes.includes(authedUser)) : false;
+      const selectedAnswer = authedUser ? (question.optionOne.votes.includes(authedUser) ? 'optionOne' : (question.optionTwo.votes.includes(authedUser) ? 'optionTwo' : undefined)) as 'optionOne' | 'optionTwo' | undefined : undefined;
+      
       if (poll) {
         return Object.assign(poll, {
           question,
           expand: persistedExpand ?? poll.expand,
-          answered: question.optionOne.votes.includes(authedUser) || question.optionTwo.votes.includes(authedUser),
-          selectedAnswer: (question.optionOne.votes.includes(authedUser) ? 'optionOne' : (question.optionTwo.votes.includes(authedUser) ? 'optionTwo' : undefined)) as 'optionOne' | 'optionTwo' | undefined,
+          answered: isAnswered,
+          selectedAnswer,
           optionOne: {
             voted: optionOneVotes,
-            percentage: `${Math.round((optionOneVotes / totalUsers) * 100)}%`,
+            percentage: calculatePercentage(optionOneVotes, totalUsers),
           },
           optionTwo: {
             voted: optionTwoVotes,
-            percentage: `${Math.round((optionTwoVotes / totalUsers) * 100)}%`,
+            percentage: calculatePercentage(optionTwoVotes, totalUsers),
           },
         });
       }
       return {
         question,
         expand: persistedExpand ?? false,
-        answered: question.optionOne.votes.includes(authedUser) || question.optionTwo.votes.includes(authedUser),
-        selectedAnswer: (question.optionOne.votes.includes(authedUser) ? 'optionOne' : (question.optionTwo.votes.includes(authedUser) ? 'optionTwo' : undefined)) as 'optionOne' | 'optionTwo' | undefined,
+        answered: isAnswered,
+        selectedAnswer,
         optionOne: {
           voted: optionOneVotes,
-          percentage: `${Math.round((optionOneVotes / totalUsers) * 100)}%`,
+          percentage: calculatePercentage(optionOneVotes, totalUsers),
         },
         optionTwo: {
           voted: optionTwoVotes,
-          percentage: `${Math.round((optionTwoVotes / totalUsers) * 100)}%`,
+          percentage: calculatePercentage(optionTwoVotes, totalUsers),
         },
       };
     })

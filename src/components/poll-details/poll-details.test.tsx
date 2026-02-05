@@ -261,6 +261,10 @@ describe("PollDetailsComponent", () => {
       },
     });
 
+    // Select an option first (required before voting)
+    const optionOneRadio = screen.getByLabelText(/option one\?/i);
+    fireEvent.click(optionOneRadio);
+
     const voteButton = screen.getByText(/Vote/i);
     fireEvent.click(voteButton);
 

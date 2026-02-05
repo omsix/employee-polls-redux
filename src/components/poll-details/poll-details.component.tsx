@@ -36,16 +36,26 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
   const user = users.entities[poll.question.author];
   const authedUser = useAppSelector((state) => state.authedUser);
 
+  // Handle case where poll author doesn't exist
+  if (!user) {
+    return <Card className={styles["poll-details-component"]}>
+      <CardContent>Error: Poll author not found</CardContent>
+    </Card>;
+  }
+
   function handleClose(): void {
     setOpen(false);
   }
 
   function handleVote(): void {
-    const mutatedQuestions = addAnswerToQuestion({ authedUser: authedUser.name!, qid: poll.question.id, answer: selectedAnswer as 'optionOne' | 'optionTwo' });
+    if (!selectedAnswer) {
+      return;
+    }
+    const mutatedQuestions = addAnswerToQuestion({ authedUser: authedUser.name!, qid: poll.question.id, answer: selectedAnswer });
     console.log('mutatedQuestions:', mutatedQuestions);
     dispatch(mutatedQuestions);
 
-    const mutatedUsers = addAnswerToUser({ authedUser: authedUser.name!, qid: poll.question.id, answer: selectedAnswer as 'optionOne' | 'optionTwo' });
+    const mutatedUsers = addAnswerToUser({ authedUser: authedUser.name!, qid: poll.question.id, answer: selectedAnswer });
     console.log('mutatedUsers:', mutatedUsers);
     dispatch(mutatedUsers);
     setOpen(false);
@@ -125,7 +135,7 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
           </CardContent>
         </Collapse>
         {!poll.answered && poll.expand && <CardActions>
-          <IconButton onClick={() => setOpen(!open)}>
+          <IconButton onClick={() => setOpen(!open)} disabled={!selectedAnswer}>
             <HowToVoteIcon /> Vote
           </IconButton>
         </CardActions>}

@@ -18,12 +18,20 @@ const App: React.FC = () => {
       dispatch(receiveUsers(users.entities));
     };
     loadUsers();
-  }, [])
+  }, [dispatch])
 
   useEffect(() => {
-    if (expiresAt && Date.now() > expiresAt) {
-      dispatch(logout());
-    }
+    // Check session expiry immediately and periodically
+    const checkExpiry = () => {
+      if (expiresAt && Date.now() > expiresAt) {
+        dispatch(logout());
+      }
+    };
+    
+    checkExpiry();
+    const intervalId = setInterval(checkExpiry, 60000); // Check every minute
+    
+    return () => clearInterval(intervalId);
   }, [expiresAt, dispatch]);
 
   return <>
