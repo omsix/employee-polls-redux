@@ -4,18 +4,22 @@ import { Poll, Question, User } from "../../state-tree/model";
 import { PollsState } from "../../state-tree/state-tree";
 
 type PollsUiState = Record<string, { expand: boolean }>;
-const POLLS_UI_STATE_STORAGE_KEY = "pollsUiState";
+const POLLS_UI_STATE_STORAGE_KEY_PREFIX = "pollsUiState";
 
 /**
  * Retrieves the persisted UI state for polls from localStorage.
  * Returns the expand/collapse state for each poll, indexed by poll ID.
  * Returns an empty object if no data exists or if parsing fails.
+ * Uses a user-specific key to maintain separate UI state per user.
  * 
+ * @param authedUser - The authenticated user ID to retrieve state for
  * @returns PollsUiState object mapping poll IDs to their UI state
  */
-function readPollsUiState(): PollsUiState {
+function readPollsUiState(authedUser: string | null): PollsUiState {
+  if (!authedUser) return {};
   try {
-    const raw = localStorage.getItem(POLLS_UI_STATE_STORAGE_KEY);
+    const storageKey = `${POLLS_UI_STATE_STORAGE_KEY_PREFIX}_${authedUser}`;
+    const raw = localStorage.getItem(storageKey);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as unknown;
     if (parsed && typeof parsed === "object") {
@@ -27,9 +31,18 @@ function readPollsUiState(): PollsUiState {
   }
 }
 
-function writePollsUiState(state: PollsUiState) {
+/**
+ * Persists the UI state for polls to localStorage.
+ * Uses a user-specific key to maintain separate UI state per user.
+ * 
+ * @param authedUser - The authenticated user ID to save state for
+ * @param state - The PollsUiState to persist
+ */
+function writePollsUiState(authedUser: string | null, state: PollsUiState) {
+  if (!authedUser) return;
   try {
-    localStorage.setItem(POLLS_UI_STATE_STORAGE_KEY, JSON.stringify(state));
+    const storageKey = `${POLLS_UI_STATE_STORAGE_KEY_PREFIX}_${authedUser}`;
+    localStorage.setItem(storageKey, JSON.stringify(state));
   } catch {
     // ignore
   }
@@ -67,7 +80,7 @@ async function loadPolls(questions: { [key: string]: Question }, users: { [key: 
 ): Promise<PollsState> {
   const authedUser: string | null = localStorage.getItem('authedUser');
   const totalUsers = Object.values(users).length;
-  const pollsUiState = readPollsUiState();
+  const pollsUiState = readPollsUiState(authedUser);
 
   const polls: Poll[] = Object.values(questions)
     .map((question) => {
@@ -145,8 +158,9 @@ const pollsApi = createApi({
     }),
     setExpanded: builder.mutation<void, { pollId: string, expanded: boolean }>({
       queryFn({ pollId, expanded }: { pollId: string, expanded: boolean }) {
-        const pollsUiState = readPollsUiState();
-        writePollsUiState({
+        const authedUser = localStorage.getItem('authedUser');
+        const pollsUiState = readPollsUiState(authedUser);
+        writePollsUiState(authedUser, {
           ...pollsUiState,
           [pollId]: {
             ...(pollsUiState[pollId] ?? { expand: false }),

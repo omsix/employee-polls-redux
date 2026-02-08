@@ -10,8 +10,10 @@ The Menu Toolbar is the main navigation bar displayed at the top of the applicat
 
 - Provide top navigation bar with branding
 - Display current user information with avatar
+- Show remaining session time with live countdown
 - Offer navigation menu to main sections
 - Enable logout functionality
+- Auto-logout when session expires
 
 ## 📋 Component Signature
 
@@ -32,21 +34,25 @@ This component accepts no props. All data is retrieved from Redux state and Reac
 ### State Used
 
 | Selector | Purpose |
-|----------|---------|
+|----------|---------|--------|
 | `state.authedUser.name` | Current user's ID |
+| `state.authedUser.expiresAt` | Session expiration timestamp |
+| `state.remainingSessionTime.seconds` | Remaining seconds until session expires |
 | `state.users.entities` | User details (name, avatar) |
 
 ### Actions Dispatched
 
 | Action | Purpose |
-|--------|---------|
+|--------|---------|--------|
 | `logout` | Clear authentication state |
+| `updateRemainingTime` | Update countdown seconds |
+| `resetRemainingTime` | Clear remaining time on logout |
 
 ## 🖼️ UI Structure
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  [≡]     Page Title              [Avatar with Name]         │
+│  Page Title     [Session: 00:59]    [Avatar with Name]  [≡] │
 │                                                             │
 │  Menu:                                                      │
 │  ┌────────────────┐                                        │
@@ -130,16 +136,72 @@ const handleNavigate = (path: string) => {
 };
 ```
 
-### Logout Handler
+### Session Countdown
+
+Displays remaining session time with live updates:
 
 ```typescript
-const handleLogout = () => {
-  handleClose();
-  localStorage.removeItem("authedUser");
+const expiresAt = useAppSelector((state) => state.authedUser.expiresAt);
+const remainingSeconds = useAppSelector((state) => state.remainingSessionTime.seconds);
+
+const handleLogout = React.useCallback(() => {
   dispatch(logout());
-  navigate("/login");
+  dispatch(resetRemainingTime());
+  localStorage.clear();
+  navigate('/login');
+}, [dispatch, navigate]);
+
+// Update remaining session time every second
+React.useEffect(() => {
+  if (!expiresAt) {
+    dispatch(resetRemainingTime());
+    return;
+  }
+
+  const updateTimer = () => {
+    const now = Date.now();
+    const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
+    dispatch(updateRemainingTime(remaining));
+
+    // Auto logout when session expires
+    if (remaining <= 0) {
+      handleLogout();
+    }
+  };
+
+  updateTimer();
+  const intervalId = setInterval(updateTimer, 1000);
+
+  return () => clearInterval(intervalId);
+}, [expiresAt, dispatch, handleLogout]);
+
+// Format remaining time as MM:SS
+const formatTime = (seconds: number | null): string => {
+  if (seconds === null || seconds < 0) return '--:--';
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 ```
+
+### Session Display Component
+
+```typescript
+{remainingSeconds !== null && (
+  <Chip
+    label={`Session: ${formatTime(remainingSeconds)}`}
+    color={remainingSeconds < 30 ? "error" : "default"}
+    size="small"
+    sx={{ marginRight: 2 }}
+  />
+)}
+```
+
+**Features:**
+- Updates every second
+- Displays time in MM:SS format
+- Turns red when less than 30 seconds remain
+- Automatically logs out user when time expires
 
 ## 🎨 Styling
 
@@ -231,6 +293,8 @@ it("logs out and navigates to login when Logout menu item is clicked", async () 
 | Feature | Implementation |
 |---------|----------------|
 | Responsive Title | Changes based on current route |
+| Session Countdown | Live timer showing remaining session time |
+| Auto-Logout | Automatically logs out when session expires |
 | User Display | Avatar with circular name text |
 | Dropdown Menu | MUI Menu with navigation items |
 | Session Management | Logout clears localStorage and Redux |

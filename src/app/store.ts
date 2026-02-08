@@ -1,7 +1,7 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
-import { combineSlices, configureStore } from "@reduxjs/toolkit"
+import { combineSlices, configureStore, createListenerMiddleware } from "@reduxjs/toolkit"
 import { setupListeners } from "@reduxjs/toolkit/query"
-import authedUserReducer from "../utils/login/authedUser"
+import authedUserReducer, { setAuthedUser, logout } from "../utils/login/authedUser"
 import usersReducer from "../utils/login/users"
 import questionsReducer from "../utils/questions/questions"
 import remainingSessionTimeReducer from "../utils/login/remainingSessionTime"
@@ -43,6 +43,25 @@ const rootReducer = combineSlices({
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
+// Create listener middleware to invalidate polls cache on user switch
+const listenerMiddleware = createListenerMiddleware();
+
+// Invalidate polls cache when user logs in
+listenerMiddleware.startListening({
+  actionCreator: setAuthedUser.fulfilled,
+  effect: async (_action, listenerApi) => {
+    listenerApi.dispatch(pollsApi.util.invalidateTags(['Polls']));
+  },
+});
+
+// Invalidate polls cache when user logs out
+listenerMiddleware.startListening({
+  actionCreator: logout,
+  effect: async (_action, listenerApi) => {
+    listenerApi.dispatch(pollsApi.util.invalidateTags(['Polls']));
+  },
+});
+
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>
 
@@ -59,7 +78,9 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(pollsApi.middleware)
+      })
+        .concat(pollsApi.middleware)
+        .prepend(listenerMiddleware.middleware)
 
       return isTestEnv ? baseMiddleware : baseMiddleware.concat(loggerMiddleware)
     },

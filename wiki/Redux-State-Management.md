@@ -10,16 +10,34 @@ The Redux store is configured in `src/app/store.ts` using Redux Toolkit.
 
 ```typescript
 // src/app/store.ts
-import { combineSlices, configureStore } from "@reduxjs/toolkit";
+import { combineSlices, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
-const rootReducer = combineSlices(
-  authedUserSlice,
-  usersSlice,
-  questionsSlice,
-  pollsApi
-);
+const rootReducer = combineSlices({
+  [pollsApi.reducerPath]: pollsApi.reducer,
+  authedUser: authedUserReducer,
+  users: usersReducer,
+  questions: questionsReducer,
+  remainingSessionTime: remainingSessionTimeReducer,
+});
+
+// Listener middleware for cache invalidation
+const listenerMiddleware = createListenerMiddleware();
+
+listenerMiddleware.startListening({
+  actionCreator: setAuthedUser.fulfilled,
+  effect: async (_action, listenerApi) => {
+    listenerApi.dispatch(pollsApi.util.invalidateTags(['Polls']));
+  },
+});
+
+listenerMiddleware.startListening({
+  actionCreator: logout,
+  effect: async (_action, listenerApi) => {
+    listenerApi.dispatch(pollsApi.util.invalidateTags(['Polls']));
+  },
+});
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -30,6 +48,7 @@ export const store = configureStore({
       },
     })
       .concat(pollsApi.middleware)
+      .prepend(listenerMiddleware.middleware)
       .concat(loggerMiddleware),
 });
 ```
@@ -53,6 +72,9 @@ RootState
 │   ├── name: string | null
 │   ├── expiresAt: number | null
 │   └── status: "idle" | "loading" | "failed"
+│
+├── remainingSessionTime # Session countdown timer
+│   └── seconds: number | null
 │
 ├── users                # All users in the system
 │   ├── entities: { [userId]: User }
@@ -107,7 +129,46 @@ const { name, expiresAt } = useAppSelector(state => state.authedUser);
 
 ---
 
-### 2. Users Slice
+### 2. RemainingSessionTime Slice
+
+**File:** `src/utils/login/remainingSessionTime.ts`
+
+**Purpose:** Manages the session countdown timer displayed in the menu toolbar.
+
+```typescript
+interface RemainingSessionTimeState {
+  seconds: number | null;
+}
+```
+
+**Actions:**
+
+| Action | Type | Description |
+|--------|------|-------------|
+| `updateRemainingTime` | Reducer | Updates remaining seconds |
+| `resetRemainingTime` | Reducer | Clears remaining time (on logout) |
+
+**Usage:**
+```typescript
+// Update countdown
+dispatch(updateRemainingTime(59));
+
+// Reset on logout
+dispatch(resetRemainingTime());
+
+// Select remaining time
+const remainingSeconds = useAppSelector(state => state.remainingSessionTime.seconds);
+```
+
+**Integration:**
+The Menu Toolbar component uses a `useEffect` hook to:
+- Calculate remaining time every second
+- Update Redux state via `updateRemainingTime`
+- Automatically logout user when time reaches 0
+
+---
+
+### 3. Users Slice
 
 **File:** `src/utils/login/users.ts`
 
@@ -146,7 +207,7 @@ const users = useAppSelector(state => state.users.entities);
 
 ---
 
-### 3. Questions Slice
+### 4. Questions Slice
 
 **File:** `src/utils/questions/questions.ts`
 
@@ -245,6 +306,20 @@ providesTags: ["Polls"]
 invalidatesTags: ["Polls"]
 ```
 
+**Automatic Invalidation:**
+The listener middleware automatically invalidates the Polls cache on user switch:
+- When a user logs in (`setAuthedUser.fulfilled`)
+- When a user logs out (`logout`)
+
+This ensures each user sees their own poll data without stale cache from previous users.
+
+**User-Specific Storage:**
+Poll UI state (expand/collapse preferences) is stored in localStorage with user-specific keys:
+```typescript
+// Storage key format: pollsUiState_{userId}
+// Example: pollsUiState_omarcisse
+```
+
 ---
 
 ## 🎣 Custom Hooks
@@ -274,6 +349,43 @@ const users = useAppSelector(state => state.users.entities);
 ---
 
 ## 🔧 Middleware
+
+### Listener Middleware (Cache Invalidation)
+
+**Purpose:** Automatically invalidates the Polls cache when users switch (login/logout).
+
+**Implementation:**
+```typescript
+const listenerMiddleware = createListenerMiddleware();
+
+// Invalidate polls cache when user logs in
+listenerMiddleware.startListening({
+  actionCreator: setAuthedUser.fulfilled,
+  effect: async (_action, listenerApi) => {
+    listenerApi.dispatch(pollsApi.util.invalidateTags(['Polls']));
+  },
+});
+
+// Invalidate polls cache when user logs out
+listenerMiddleware.startListening({
+  actionCreator: logout,
+  effect: async (_action, listenerApi) => {
+    listenerApi.dispatch(pollsApi.util.invalidateTags(['Polls']));
+  },
+});
+```
+
+**Why It's Needed:**
+- Each user has their own answered/unanswered poll states
+- Poll UI state (expand/collapse) is stored per user in localStorage
+- Cache invalidation ensures fresh data is fetched for the new user
+- Prevents stale data from previous user sessions
+
+**Triggered On:**
+- `setAuthedUser.fulfilled` - User logs in
+- `logout` - User logs out
+
+---
 
 ### Logger Middleware
 
