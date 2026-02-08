@@ -1,11 +1,18 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { _getQuestions, _getUsers, _saveQuestionAnswer, } from "../../data/data";
+import { _getQuestions, _getUsers } from "../../data/data";
 import { Poll, Question, User } from "../../state-tree/model";
 import { PollsState } from "../../state-tree/state-tree";
 
 type PollsUiState = Record<string, { expand: boolean }>;
 const POLLS_UI_STATE_STORAGE_KEY = "pollsUiState";
 
+/**
+ * Retrieves the persisted UI state for polls from localStorage.
+ * Returns the expand/collapse state for each poll, indexed by poll ID.
+ * Returns an empty object if no data exists or if parsing fails.
+ * 
+ * @returns PollsUiState object mapping poll IDs to their UI state
+ */
 function readPollsUiState(): PollsUiState {
   try {
     const raw = localStorage.getItem(POLLS_UI_STATE_STORAGE_KEY);
@@ -44,6 +51,17 @@ function calculatePercentage(votes: number, total: number): string {
   return total > 0 ? `${Math.round((votes / total) * 100)}%` : '0%';
 }
 
+/**
+ * Transforms raw questions and users data into a PollsState with enriched poll information.
+ * For each question, determines if the authenticated user has answered it, calculates vote
+ * percentages based on total users, and restores UI state (expand/collapse) from localStorage.
+ * Polls are sorted by timestamp in descending order (newest first).
+ * 
+ * @param questions - Dictionary of questions indexed by question ID
+ * @param users - Dictionary of users indexed by user ID
+ * @param initialState - Optional existing poll state to merge with new data
+ * @returns Promise resolving to PollsState with entities and status
+ */
 async function loadPolls(questions: { [key: string]: Question }, users: { [key: string]: User },
   initialState?: { [key: string]: Poll }
 ): Promise<PollsState> {

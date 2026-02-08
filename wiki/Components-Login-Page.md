@@ -140,10 +140,12 @@ When `setAuthedUser` is dispatched, the authedUser slice creates a session:
 // In authedUser.ts
 setAuthedUser.fulfilled: (state, action) => {
   state.name = action.payload;
-  state.expiresAt = Date.now() + 60 * 60 * 1000; // 60 minutes
+  state.expiresAt = Date.now() + 60 * 1000; // 1 minute
   state.status = "idle";
 }
 ```
+
+> **Note:** The session expires after 1 minute for Udacity review purposes. In a production environment, this would typically be set to a longer duration (e.g., 60 minutes).
 
 ## 🎨 Styling
 
@@ -164,8 +166,9 @@ import styles from "./login-page.module.css";
 ### Test Cases
 
 1. **Login Flow** - Verifies user selection and login dispatch
+2. **Session Expiry** - Verifies session is set to expire after 1 minute
 
-### Example Test
+### Example Test: Login Flow
 
 ```typescript
 it("triggers handleLogin when omarcisse is selected and Login button is clicked", async () => {
@@ -193,6 +196,36 @@ it("triggers handleLogin when omarcisse is selected and Login button is clicked"
   });
 });
 ```
+
+### Example Test: Session Expiry
+
+```typescript
+it("sets session to expire after 1 minute when user logs in", async () => {
+  // Use fake timers with shouldAdvanceTime to allow async operations to complete
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  const currentTime = Date.now();
+  vi.setSystemTime(currentTime);
+
+  // ... render and login flow ...
+
+  await waitFor(() => {
+    const state = store.getState();
+    expect(state.authedUser.name).toBe("omarcisse");
+    expect(state.authedUser.expiresAt).toBeDefined();
+    // Allow for small timing variance due to async operations
+    expect(state.authedUser.expiresAt).toBeGreaterThanOrEqual(currentTime + 60 * 1000);
+    expect(state.authedUser.expiresAt).toBeLessThanOrEqual(currentTime + 60 * 1000 + 1000);
+  });
+
+  vi.useRealTimers();
+});
+```
+
+### Testing Notes
+
+When testing session expiry with fake timers:
+- Use `vi.useFakeTimers({ shouldAdvanceTime: true })` to allow async operations (like `waitFor` and `findByText`) to complete while fake timers are active
+- Use range assertions instead of exact equality to account for timing variance during async operations
 
 ## 🔗 Related Components
 

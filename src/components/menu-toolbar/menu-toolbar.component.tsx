@@ -13,8 +13,9 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import { logout } from '../../utils/login/authedUser';
 import { useAppSelector } from '../../app/hooks';
-import { Avatar } from "@mui/material";
+import { Avatar, Chip } from "@mui/material";
 import CircularText from "../circular-text/circular-text.component";
+import { updateRemainingTime, resetRemainingTime } from '../../utils/login/remainingSessionTime';
 
 export interface MenuToolbarComponentProps { }
 
@@ -24,10 +25,54 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
   const location = useLocation();
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
   const userId = useAppSelector((state) => state.authedUser.name);
+  const expiresAt = useAppSelector((state) => state.authedUser.expiresAt);
+  const remainingSeconds = useAppSelector((state) => state.remainingSessionTime.seconds);
   const users = useAppSelector((state) => state.users.entities);
   const user = users[userId || ''] || {};
   const avatarSrc = user.avatarURL;
   const fullName = user.name || '';
+
+  const handleLogout = React.useCallback(() => {
+    dispatch(logout());
+    dispatch(resetRemainingTime());
+    localStorage.clear();
+    navigate('/login');
+  }, [dispatch, navigate]);
+
+  // Update remaining session time every second
+  React.useEffect(() => {
+    if (!expiresAt) {
+      dispatch(resetRemainingTime());
+      return;
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
+      dispatch(updateRemainingTime(remaining));
+
+      // Auto logout when session expires
+      if (remaining <= 0) {
+        handleLogout();
+      }
+    };
+
+    // Initial update
+    updateTimer();
+
+    // Set up interval to update every second
+    const intervalId = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [expiresAt, dispatch, handleLogout]);
+
+  // Format remaining time as MM:SS
+  const formatTime = (seconds: number | null): string => {
+    if (seconds === null || seconds < 0) return '--:--';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const currentPageLabel = React.useMemo(() => {
     const pathname = location.pathname;
@@ -47,12 +92,6 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
     setMenuAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    localStorage.clear(); // optional: clear persisted state
-    navigate('/login');   // redirect to login page
-  };
-
   const handleNavigate = (path: string) => {
     navigate(path);
   };
@@ -63,12 +102,21 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Employee Polls{currentPageLabel ? ` - ${currentPageLabel}` : ""}
         </Typography>
+        {remainingSeconds !== null && (
+          <Chip
+            label={`Session: ${formatTime(remainingSeconds)}`}
+            color={remainingSeconds < 30 ? "error" : "default"}
+            size="small"
+            sx={{ marginRight: 2 }}
+          />
+        )}
         <div className={styles["menu-toolbar-component"]}>
           <CircularText
             text={fullName}
             radius={40}
             fontSize={12}
             color="var(--AppBar-color)"
+            onClick={handleOpenMenu}
           >
             <Avatar alt={fullName} src={avatarSrc || undefined}></Avatar>
           </CircularText>

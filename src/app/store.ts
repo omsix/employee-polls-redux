@@ -4,6 +4,7 @@ import { setupListeners } from "@reduxjs/toolkit/query"
 import authedUserReducer from "../utils/login/authedUser"
 import usersReducer from "../utils/login/users"
 import questionsReducer from "../utils/questions/questions"
+import remainingSessionTimeReducer from "../utils/login/remainingSessionTime"
 import {
   persistStore,
   persistReducer,
@@ -37,6 +38,7 @@ const rootReducer = combineSlices({
   authedUser: authedUserReducer,
   users: usersReducer,
   questions: questionsReducer,
+  remainingSessionTime: remainingSessionTimeReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

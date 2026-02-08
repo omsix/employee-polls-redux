@@ -22,7 +22,8 @@ export const LoginPageComponent: React.FunctionComponent<LoginPageComponentProps
       const loadAUthedUserAndQuestions = async () => {
         const questions = await getQuestions(); // fetch from API or static file
         dispatch(receiveQuestions(questions));
-        dispatch(setAuthedUser({ name: selectedUser, durationMinutes: 60 }));
+        //Set the session to expire in 1 minute for the code review by Udacity
+        dispatch(setAuthedUser({ name: selectedUser, durationMinutes: 1 }));
       };
       loadAUthedUserAndQuestions();
     }

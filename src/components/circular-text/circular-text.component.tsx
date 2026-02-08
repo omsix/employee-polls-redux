@@ -1,4 +1,5 @@
 import React, { ReactNode } from "react";
+import styles from "./circular-text.module.css";
 
 interface CircularTextComponentProps {
   text: string;
@@ -6,7 +7,8 @@ interface CircularTextComponentProps {
   fontSize?: number;
   fontWeight?: string | number;
   color?: string;
-  children?: ReactNode; // contenu central (avatar, icône, etc.)
+  children?: ReactNode; // central content (avatar, icon, etc.)
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 const CircularTextComponent: React.FC<CircularTextComponentProps> = ({
@@ -16,13 +18,16 @@ const CircularTextComponent: React.FC<CircularTextComponentProps> = ({
   fontWeight = "bold",
   color = "var(--AppBar-color)",
   children,
+  onClick,
 }) => {
-  // Génère un ID unique pour le path
+  // Generate a unique ID for the path
   const pathId = `circlePath-${Math.random().toString(36).substr(2, 9)}`;
 
   return (
-    <div style={{ position: "relative", width: radius * 2, height: radius * 2 }}>
-      {/* Élément central */}
+    <div style={{ position: "relative", width: radius * 2, height: radius * 2, cursor: onClick ? "pointer" : "default" }}
+      onClick={onClick}
+      className={styles["circular-text-component"]}>
+      {/* Central element */}
       <div
         style={{
           position: "absolute",
@@ -42,7 +47,7 @@ const CircularTextComponent: React.FC<CircularTextComponentProps> = ({
         height={radius * 2}
         style={{ position: "absolute", top: 0, left: 0 }}
       >
-         <defs>
+        <defs>
           <path
             id={pathId}
             d={`
