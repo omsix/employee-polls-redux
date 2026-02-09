@@ -8,6 +8,7 @@ This document provides a comprehensive overview of all React components in the E
 |-----------|---------|-----------------|
 | [Dashboard](#dashboard) | Main view with poll tabs | ✅ Yes |
 | [LoginPage](#login-page) | User authentication | ✅ Yes |
+| [RequireAuth](#require-auth) | Protected route wrapper | ✅ Yes |
 | [PollDetails](#poll-details) | Individual poll card | ✅ Yes |
 | [PollDetailsPage](#poll-details-page) | Poll route wrapper | ✅ Yes |
 | [NewPoll](#new-poll) | Create new poll form | ✅ Yes |
@@ -59,15 +60,64 @@ export const LoginPageComponent: React.FunctionComponent = () => { ... }
 **Features:**
 - Dropdown to select from available users
 - Fetches questions on successful login
-- Sets 60-minute session duration
+- Sets 1-minute session duration (for Udacity review)
 - Disabled state until user selected
+- Redirects to original requested path after login
 
 **Redux Usage:**
 - `state.users.entities` - Available users for dropdown
 - Dispatches `receiveQuestions()` - Load questions
 - Dispatches `setAuthedUser()` - Authenticate user
 
+**Routing:**
+- Uses `useLocation()` to capture redirect path from state
+- Uses `useNavigate()` to redirect after successful authentication
+- Redirects to `state?.path` or `/` (dashboard) after login
+
 **UI Components:** MUI Select, MenuItem, Button, FormControl
+
+---
+
+### Require Auth
+
+**File:** `src/components/require-auth/require-auth.component.tsx`
+
+Protected route wrapper component that ensures user authentication.
+
+```typescript
+interface RequireAuthProps {
+  children: ReactNode;
+}
+
+export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => { ... }
+```
+
+**Features:**
+- Wraps protected route components
+- Redirects unauthenticated users to `/login`
+- Preserves attempted path for post-login redirect
+- Renders children only if user is authenticated
+
+**Redux Usage:**
+- `state.authedUser.name` - Check authentication status
+
+**Implementation Pattern:**
+```typescript
+<Route
+  path="/dashboard"
+  element={
+    <RequireAuth>
+      <MenuToolbarComponent />
+      <DashboardComponent />
+    </RequireAuth>
+  }
+/>
+```
+
+**Routing:**
+- Uses `useLocation()` to capture current path
+- Passes path as state to login redirect
+- Uses `<Navigate>` component for redirects
 
 ---
 
@@ -285,26 +335,32 @@ export const CircularText: React.FunctionComponent<CircularTextProps> = ({ ... }
 ## 🔗 Component Relationships
 
 ```
-App
-├── LoginPageComponent (when logged out)
+App (Routes)
+├── /login → LoginPageComponent
 │
-└── (when logged in)
-    ├── MenuToolbarComponent
-    │   └── CircularText (with Avatar)
-    │
-    └── MainRoutes
-        ├── / → DashboardComponent
-        │       └── PollDetailsComponent (multiple)
-        │
-        ├── /questions/:id → PollDetailsPageComponent
-        │                    └── PollDetailsComponent
-        │
-        ├── /add → NewPollComponent
-        │
-        ├── /leaderboard → LeaderBoardComponent
-        │
-        └── /404 → NotFoundComponent
+├── / → RequireAuth
+│       ├── MenuToolbarComponent
+│       │   └── CircularText (with Avatar)
+│       └── DashboardComponent
+│           └── PollDetailsComponent (multiple)
+│
+├── /questions/:id → RequireAuth
+│                    ├── MenuToolbarComponent
+│                    └── PollDetailsPageComponent
+│                        └── PollDetailsComponent
+│
+├── /add → RequireAuth
+│          ├── MenuToolbarComponent
+│          └── NewPollComponent
+│
+├── /leaderboard → RequireAuth
+│                  ├── MenuToolbarComponent
+│                  └── LeaderBoardComponent
+│
+└── /404 → MenuToolbarComponent + NotFoundComponent
 ```
+
+**Note:** All routes except `/login` and `/404` are protected with the `RequireAuth` wrapper.
 
 ---
 
@@ -315,11 +371,13 @@ Each component follows this pattern:
 ```
 component-name/
 ├── component-name.component.tsx    # Main component
-├── component-name.module.css       # Scoped styles
+├── component-name.module.css       # Scoped styles (optional)
 ├── component-name.test.tsx         # Unit tests
 └── __snapshots__/                  # Test snapshots
     └── component-name.test.tsx.snap
 ```
+
+**Note:** Some components like `RequireAuth` may not have CSS modules if they are purely functional wrappers.
 
 ---
 

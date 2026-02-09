@@ -3,6 +3,7 @@ import { render } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { PropsWithChildren, ReactElement } from "react"
 import { Provider } from "react-redux"
+import { MemoryRouter } from "react-router-dom"
 import type { AppStore, RootState } from "../app/store"
 import { makeStore } from "../app/store"
 
@@ -31,6 +32,14 @@ type ExtendedRenderOptions = Omit<RenderOptions, "queries"> & {
    * @default makeStore(preloadedState)
    */
   store?: AppStore
+
+  /**
+   * Initial entries for MemoryRouter, useful for testing components
+   * that depend on specific routes.
+   *
+   * @default ["/"]
+   */
+  routerInitialEntries?: string[]
 }
 
 /**
@@ -49,11 +58,16 @@ export const renderWithProviders = (
     preloadedState = {},
     // Automatically create a store instance if no store was passed in
     store = makeStore(preloadedState),
+    routerInitialEntries = ["/"],
     ...renderOptions
   } = extendedRenderOptions
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Provider store={store}>{children}</Provider>
+    <Provider store={store}>
+      <MemoryRouter initialEntries={routerInitialEntries}>
+        {children}
+      </MemoryRouter>
+    </Provider>
   )
 
   // Return an object with the store and all of RTL's query functions

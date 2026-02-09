@@ -1,6 +1,5 @@
 import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
 import { renderWithProviders } from "../../utils/test-utils";
 import MenuToolbarComponent from "./menu-toolbar.component";
 
@@ -31,17 +30,12 @@ describe("MenuToolbarComponent", () => {
       },
     };
 
-    renderWithProviders(
-      <MemoryRouter>
-        <MenuToolbarComponent />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
-          users: { entities: users, status: "idle" },
-        },
+    renderWithProviders(<MenuToolbarComponent />, {
+      preloadedState: {
+        authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
+        users: { entities: users, status: "idle" },
       },
-    );
+    });
 
     expect(screen.getByText(/Employee Polls/)).toBeInTheDocument();
   });
@@ -57,17 +51,13 @@ describe("MenuToolbarComponent", () => {
       },
     };
 
-    renderWithProviders(
-      <MemoryRouter initialEntries={["/add"]}>
-        <MenuToolbarComponent />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
-          users: { entities: users, status: "idle" },
-        },
+    renderWithProviders(<MenuToolbarComponent />, {
+      preloadedState: {
+        authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
+        users: { entities: users, status: "idle" },
       },
-    );
+      routerInitialEntries: ["/add"],
+    });
 
     expect(screen.getByText(/Employee Polls - New Poll/)).toBeInTheDocument();
   });
@@ -83,17 +73,12 @@ describe("MenuToolbarComponent", () => {
       },
     };
 
-    renderWithProviders(
-      <MemoryRouter>
-        <MenuToolbarComponent />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
-          users: { entities: users, status: "idle" },
-        },
+    renderWithProviders(<MenuToolbarComponent />, {
+      preloadedState: {
+        authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
+        users: { entities: users, status: "idle" },
       },
-    );
+    });
 
     const menuButton = screen.getByRole("button", { name: "" });
     fireEvent.click(menuButton);
@@ -119,17 +104,12 @@ describe("MenuToolbarComponent", () => {
       },
     };
 
-    renderWithProviders(
-      <MemoryRouter>
-        <MenuToolbarComponent />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
-          users: { entities: users, status: "idle" },
-        },
+    renderWithProviders(<MenuToolbarComponent />, {
+      preloadedState: {
+        authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
+        users: { entities: users, status: "idle" },
       },
-    );
+    });
 
     const menuButton = screen.getByRole("button", { name: "" });
     fireEvent.click(menuButton);
@@ -155,17 +135,12 @@ describe("MenuToolbarComponent", () => {
       },
     };
 
-    const { store } = renderWithProviders(
-      <MemoryRouter>
-        <MenuToolbarComponent />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
-          users: { entities: users, status: "idle" },
-        },
+    const { store } = renderWithProviders(<MenuToolbarComponent />, {
+      preloadedState: {
+        authedUser: { name: "omarcisse", expiresAt: Date.now() + 60_000, status: "idle" },
+        users: { entities: users, status: "idle" },
       },
-    );
+    });
 
     const menuButton = screen.getByRole("button", { name: "" });
     fireEvent.click(menuButton);

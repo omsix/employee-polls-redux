@@ -1,5 +1,4 @@
 import { screen, waitFor } from "@testing-library/react"
-import { MemoryRouter } from "react-router-dom"
 import { vi } from "vitest"
 import App from "./App"
 import { renderWithProviders } from "./utils/test-utils"
@@ -26,16 +25,11 @@ describe("App", () => {
   })
 
   test("Logged out: renders the login page", async () => {
-    renderWithProviders(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "", expiresAt: null, status: "idle" },
-        },
+    renderWithProviders(<App />, {
+      preloadedState: {
+        authedUser: { name: "", expiresAt: null, status: "idle" },
       },
-    )
+    })
 
     expect(await screen.findByText(/welcome to employee polls/i)).toBeInTheDocument()
   })
@@ -43,18 +37,13 @@ describe("App", () => {
   test("Logged in: renders the menu toolbar and app shell", async () => {
     localStorage.setItem("authedUser", "sarahedo")
 
-    renderWithProviders(
-      <MemoryRouter initialEntries={["/"]}>
-        <App />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "sarahedo", expiresAt: Date.now() + 60_000, status: "idle" },
-          users: { entities: {}, status: "idle" },
-          questions: { entities: {}, status: "idle" },
-        },
+    renderWithProviders(<App />, {
+      preloadedState: {
+        authedUser: { name: "sarahedo", expiresAt: Date.now() + 60_000, status: "idle" },
+        users: { entities: {}, status: "idle" },
+        questions: { entities: {}, status: "idle" },
       },
-    )
+    })
 
     expect(await screen.findByText(/employee polls/i)).toBeInTheDocument()
   })
@@ -73,16 +62,11 @@ describe("App", () => {
       status: "idle",
     })
 
-    const { store } = renderWithProviders(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "", expiresAt: null, status: "idle" },
-        },
+    const { store } = renderWithProviders(<App />, {
+      preloadedState: {
+        authedUser: { name: "", expiresAt: null, status: "idle" },
       },
-    )
+    })
 
     await waitFor(() => {
       expect(getUsersMock).toHaveBeenCalledTimes(1)
@@ -96,16 +80,11 @@ describe("App", () => {
   test("Expired session: dispatches logout and shows login page", async () => {
     localStorage.setItem("authedUser", "sarahedo")
 
-    const { store } = renderWithProviders(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "sarahedo", expiresAt: Date.now() - 1, status: "idle" },
-        },
+    const { store } = renderWithProviders(<App />, {
+      preloadedState: {
+        authedUser: { name: "sarahedo", expiresAt: Date.now() - 1, status: "idle" },
       },
-    )
+    })
 
     await waitFor(() => {
       expect(store.getState().authedUser.name).toBeNull()
@@ -117,16 +96,11 @@ describe("App", () => {
   test("Non-expired session: does not logout", async () => {
     localStorage.setItem("authedUser", "sarahedo")
 
-    const { store } = renderWithProviders(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>,
-      {
-        preloadedState: {
-          authedUser: { name: "sarahedo", expiresAt: Date.now() + 60_000, status: "idle" },
-        },
+    const { store } = renderWithProviders(<App />, {
+      preloadedState: {
+        authedUser: { name: "sarahedo", expiresAt: Date.now() + 60_000, status: "idle" },
       },
-    )
+    })
 
     await waitFor(() => {
       expect(store.getState().authedUser.name).toBe("sarahedo")

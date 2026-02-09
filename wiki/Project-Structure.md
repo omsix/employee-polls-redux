@@ -11,7 +11,7 @@ employee-polls-redux/
 │   │   ├── createAppSlice.ts       # Custom slice factory with async thunk support
 │   │   ├── hooks.ts                # Typed Redux hooks (useAppDispatch, useAppSelector)
 │   │   ├── loggerMiddleware.ts     # Custom Redux middleware for logging
-│   │   ├── main-routes.tsx         # React Router route definitions
+│   │   ├── main-routes.tsx         # (Legacy) React Router route definitions - see App.tsx
 │   │   └── store.ts                # Redux store configuration with persistence
 │   │
 │   ├── components/                 # React UI Components
@@ -23,7 +23,8 @@ employee-polls-redux/
 │   │   ├── nav-bar/                # Simple logout navigation
 │   │   ├── new-poll/               # Poll creation form
 │   │   ├── not-found/              # 404 error page
-│   │   └── poll-details/           # Individual poll view & voting
+│   │   ├── poll-details/           # Individual poll view & voting
+│   │   └── require-auth/           # Protected route wrapper component
 │   │
 │   ├── data/                       # Data Layer
 │   │   └── data.ts                 # Mock data & API simulation functions
@@ -35,13 +36,14 @@ employee-polls-redux/
 │   ├── utils/                      # Redux Slices & Utilities
 │   │   ├── login/                  # Auth-related slices
 │   │   │   ├── authedUser.ts       # Authentication slice
+│   │   │   ├── remainingSessionTime.ts # Session countdown timer slice
 │   │   │   └── users.ts            # Users slice
 │   │   ├── polls/                  # Poll utilities
 │   │   │   └── pollsAPI.ts         # RTK Query API for polls
 │   │   └── questions/              # Questions slice
 │   │       └── questions.ts        # Questions management
 │   │
-│   ├── App.tsx                     # Root component
+│   ├── App.tsx                     # Root component with route definitions
 │   ├── App.css                     # Global styles
 │   ├── main.tsx                    # Application entry point
 │   └── setupTests.ts               # Test configuration

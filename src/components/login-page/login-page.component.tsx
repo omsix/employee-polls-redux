@@ -11,11 +11,15 @@ import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import { getQuestions } from './loginAPI';
 import { receiveQuestions } from '../../utils/questions/questions';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const LoginPageComponent: React.FunctionComponent<LoginPageComponentProps> = () => {
   const [selectedUser, setSelectedUser] = useState('');
   const users: { [key: string]: User } = useAppSelector((state) => state.users.entities);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { path?: string };
 
   const handleLogin = () => {
     if (selectedUser) {
@@ -23,7 +27,9 @@ export const LoginPageComponent: React.FunctionComponent<LoginPageComponentProps
         const questions = await getQuestions(); // fetch from API or static file
         dispatch(receiveQuestions(questions));
         //Set the session to expire in 1 minute for the code review by Udacity
-        dispatch(setAuthedUser({ name: selectedUser, durationMinutes: 1 }));
+        await dispatch(setAuthedUser({ name: selectedUser, durationMinutes: 1 }));
+        // Redirect to original path or dashboard
+        navigate(state?.path || "/");
       };
       loadAUthedUserAndQuestions();
     }
