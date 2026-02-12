@@ -7,10 +7,12 @@
     flex-flow: column wrap;
     justify-content: center;
     align-items: center;
+    cursor: not-allowed;
 }
 
 .text {
     height: 100%;
+    width: 100%;
 }
 
 .text h1 {

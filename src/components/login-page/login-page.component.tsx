@@ -28,10 +28,13 @@ export const LoginPageComponent: React.FunctionComponent<LoginPageComponentProps
         dispatch(receiveQuestions(questions));
         //Set the session to expire in 1 minute for the code review by Udacity
         await dispatch(setAuthedUser({ name: selectedUser, durationMinutes: 1 }));
+        // Mark that we're starting an active SPA session
+        sessionStorage.setItem('spa_navigation_active', 'true');
         // Redirect to original path or dashboard
         navigate(state?.path || "/");
       };
       loadAUthedUserAndQuestions();
+      sessionStorage.setItem('spa_navigation_active', 'false');
     }
   };
 

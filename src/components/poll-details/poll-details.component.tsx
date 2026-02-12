@@ -13,9 +13,12 @@ import FormLabel from '@mui/material/FormLabel';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckIcon from '@mui/icons-material/Check';
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap';
 import { addAnswerToQuestion } from "../../utils/questions/questions";
 import { addAnswerToUser } from "../../utils/login/users";
 import { useSetExpandedMutation } from "../../utils/polls/pollsAPI";
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export interface PollDetailsComponentProps {
   poll: Poll;
@@ -28,8 +31,13 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
 
   const users = useAppSelector((state) => state.users);
   const [triggerSetExpanded] = useSetExpandedMutation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const dispatch = useAppDispatch();
+
+  // Check if we're on the question details page
+  const isOnDetailsPage = location.pathname.startsWith('/questions/');
   const toggleExpand = () => {
     triggerSetExpanded({ pollId: poll.question.id, expanded: !poll.expand });
   };
@@ -65,6 +73,35 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
     setSelectedAnswer(value);
   }
 
+  const handleActiveSession = () => {
+    sessionStorage.setItem('spa_navigation_active', 'true');
+  };
+
+  const handleInactiveSession = () => {
+    sessionStorage.setItem('spa_navigation_active', 'false');
+  };
+  const handleCardHeaderAction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleActiveSession();
+    if (isOnDetailsPage) {
+      // On details page - navigate to home with appropriate tab
+      handleNavigateToHome();
+    } else {
+      // On dashboard - navigate to details page
+      handleNavigateToDetails();
+    }
+    handleInactiveSession();
+  };
+
+  const handleNavigateToHome = () => {
+    const activeTab = poll.answered ? 'answered' : 'pending';
+    navigate('/', { state: { activeTab } });
+  };
+
+  const handleNavigateToDetails = () => {
+    navigate(`/questions/${poll.question.id}`);
+  };
+
   return (
     <>
       <Card className={styles["poll-details-component"]}>
@@ -74,6 +111,11 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
               <Avatar className={styles["poll-details-avatar-img"]} src={user.avatarURL} aria-label={user.name} >
                 {user.name.charAt(0)}
               </Avatar>
+            }
+            action={
+              <IconButton onClick={handleCardHeaderAction} aria-label={isOnDetailsPage ? "back to dashboard" : "view details"}>
+                {isOnDetailsPage ? <ZoomInMapIcon /> : <ZoomOutMapIcon />}
+              </IconButton>
             }
             title={` By ${user.name}`}
             subheader={`Asked On ${new Date(poll.question.timestamp).toLocaleDateString()}`}

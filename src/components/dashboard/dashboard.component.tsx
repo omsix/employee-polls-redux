@@ -1,5 +1,6 @@
 import styles from "./dashboard.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -33,7 +34,19 @@ function CustomTabPanel(props: TabPanelProps) {
 }
 
 export const DashboardComponent: React.FunctionComponent<DashboardComponentProps> = () => {
+  const location = useLocation();
+  const state = location.state as { activeTab?: 'pending' | 'answered' } | null;
+  
   const [displayPendingPolls, setDisplayPendingPolls] = useState(true);
+
+  useEffect(() => {
+    // Set initial tab based on navigation state
+    if (state?.activeTab === 'answered') {
+      setDisplayPendingPolls(false);
+    } else if (state?.activeTab === 'pending') {
+      setDisplayPendingPolls(true);
+    }
+  }, [state]);
   const users: { [key: string]: User } = useAppSelector((state) => state.users.entities);
   const questions: { [key: string]: Question } = useAppSelector((state) => state.questions.entities);
 

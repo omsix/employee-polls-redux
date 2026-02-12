@@ -36,6 +36,7 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
     dispatch(logout());
     dispatch(resetRemainingTime());
     localStorage.clear();
+    sessionStorage.clear();
     navigate('/login');
   }, [dispatch, navigate]);
 
@@ -79,6 +80,8 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
     if (pathname === "/" || pathname === "/login") return "Dashboard";
     if (pathname === "/add") return "New Poll";
     if (pathname === "/leaderboard" || pathname === "/leader-board") return "Leader Board";
+    if (pathname === "/404") return "Not Found";
+    if (pathname.includes("questions/")) return "Question Details";
     return "";
   }, [location.pathname]);
 
@@ -95,7 +98,13 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
   const handleNavigate = (path: string) => {
     navigate(path);
   };
+  const handleActiveSession = () => {
+    sessionStorage.setItem('spa_navigation_active', 'true');
+  };
 
+  const handleInactiveSession = () => {
+    sessionStorage.setItem('spa_navigation_active', 'false');
+  };
   return (
     <AppBar position="static">
       <Toolbar>
@@ -141,7 +150,9 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
             <MenuItem
               onClick={() => {
                 handleCloseMenu();
+                handleActiveSession();
                 handleNavigate("/");
+                handleInactiveSession();
               }}
             >
               Home
@@ -149,7 +160,9 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
             <MenuItem
               onClick={() => {
                 handleCloseMenu();
+                handleActiveSession();
                 handleNavigate("/add");
+                handleInactiveSession();
               }}
             >
               New Poll
@@ -157,7 +170,9 @@ const MenuToolbarComponent: React.FunctionComponent<MenuToolbarComponentProps> =
             <MenuItem
               onClick={() => {
                 handleCloseMenu();
+                handleActiveSession();
                 handleNavigate("/leaderboard");
+                handleInactiveSession();
               }}
             >
               Leaderboard
