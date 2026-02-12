@@ -32,9 +32,12 @@ export const LoginPageComponent: React.FunctionComponent<LoginPageComponentProps
         sessionStorage.setItem('spa_navigation_active', 'true');
         // Redirect to original path or dashboard
         navigate(state?.path || "/");
+        // Reset after navigation completes
+        setTimeout(() => {
+          sessionStorage.setItem('spa_navigation_active', 'false');
+        }, 500);
       };
       loadAUthedUserAndQuestions();
-      sessionStorage.setItem('spa_navigation_active', 'false');
     }
   };
 

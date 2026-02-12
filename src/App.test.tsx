@@ -20,6 +20,7 @@ const getUsersMock = vi.mocked(getUsers)
 describe("App", () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
     getUsersMock.mockReset()
     getUsersMock.mockResolvedValue({ entities: {}, status: "idle" })
   })
@@ -95,6 +96,7 @@ describe("App", () => {
 
   test("Non-expired session: does not logout", async () => {
     localStorage.setItem("authedUser", "sarahedo")
+    sessionStorage.setItem("spa_navigation_active", "true")
 
     const { store } = renderWithProviders(<App />, {
       preloadedState: {

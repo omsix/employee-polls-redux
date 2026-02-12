@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./poll-details.module.css";
-import { Card, CardActionArea, CardContent, Avatar, Collapse, CardActions, Dialog, DialogTitle, DialogContentText, DialogActions, DialogContent } from "@mui/material";
+import { Card, CardActionArea, CardContent, Avatar, Collapse, CardActions, Dialog, DialogTitle, DialogContentText, DialogActions, DialogContent, Tooltip } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { Poll } from "../../state-tree/model";
 import CardHeader from '@mui/material/CardHeader';
@@ -105,21 +105,25 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
   return (
     <>
       <Card className={styles["poll-details-component"]}>
-        <CardActionArea onClick={toggleExpand}>
-          {poll.expand && (<CardHeader
+        {poll.expand && (
+          <CardHeader
             avatar={
               <Avatar className={styles["poll-details-avatar-img"]} src={user.avatarURL} aria-label={user.name} >
                 {user.name.charAt(0)}
               </Avatar>
             }
             action={
-              <IconButton onClick={handleCardHeaderAction} aria-label={isOnDetailsPage ? "back to dashboard" : "view details"}>
-                {isOnDetailsPage ? <ZoomInMapIcon /> : <ZoomOutMapIcon />}
-              </IconButton>
+              <Tooltip title={isOnDetailsPage ? "back to dashboard" : "view details"}>
+                <IconButton onClick={handleCardHeaderAction} aria-label={isOnDetailsPage ? "back to dashboard" : "view details"}>
+                  {isOnDetailsPage ? <ZoomInMapIcon /> : <ZoomOutMapIcon />}
+                </IconButton>
+              </Tooltip>
             }
             title={` By ${user.name}`}
             subheader={`Asked On ${new Date(poll.question.timestamp).toLocaleDateString()}`}
-          />)}
+          />
+        )}
+        <CardActionArea onClick={toggleExpand}>
           {!poll.expand && (<CardHeader
             avatar={
               <Avatar aria-label={user.name} className={styles["poll-details-avatar-letter"]}>
@@ -144,6 +148,27 @@ export const PollDetailsComponent: React.FunctionComponent<PollDetailsComponentP
                 <FormControlLabel value={"optionOne"} control={<Radio />} label={`${poll.question.optionOne.text.charAt(0).toUpperCase() + poll.question.optionOne.text.slice(1)}?`} />
                 <FormControlLabel value={"optionTwo"} control={<Radio />} label={`${poll.question.optionTwo.text.charAt(0).toUpperCase() + poll.question.optionTwo.text.slice(1)}?`} />
               </RadioGroup>
+              {isOnDetailsPage && <div className={styles["poll-details-results"]}>
+                <p><h4>Current Poll Results for question id({poll.question.id})</h4></p>
+                <ol>
+                  {["optionOne", "optionTwo"].map((optKey) => {
+                    const option = poll.question[optKey as "optionOne" | "optionTwo"];
+                    const percentage = poll[optKey as "optionOne" | "optionTwo"].percentage;
+                    const text =
+                      option.text.charAt(0).toUpperCase() + option.text.slice(1);
+
+                    return (
+                      <li key={optKey}>
+                        {
+                          <>
+                            {text} <i>[{option.votes.length} votes ({percentage})]</i>
+                          </>
+                        }
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>}
             </FormControl>}
             {poll.answered && (
               <div>

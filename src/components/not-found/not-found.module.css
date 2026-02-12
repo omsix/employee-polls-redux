@@ -1,13 +1,17 @@
 .not-found-component {
-    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: url("/assets/404.jpg") no-repeat left top;
     background-size: cover;
-    overflow: hidden;
     display: flex;
     flex-flow: column wrap;
     justify-content: center;
     align-items: center;
     cursor: not-allowed;
+    z-index: 9999;
 }
 
 .text {

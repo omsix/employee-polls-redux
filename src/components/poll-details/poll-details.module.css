@@ -12,3 +12,15 @@
     width: 40px !important;
     height: 40px !important;
 }
+
+.poll-details-results {
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin: 3px;
+    border-radius: 8px;
+    background-color: var(--AppBar-background);
+
+    h4 {
+        color: var(--AppBar-color);
+    }
+}

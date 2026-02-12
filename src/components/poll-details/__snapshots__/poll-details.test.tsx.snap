@@ -6,42 +6,65 @@ exports[`PollDetailsComponent > matches snapshot when omarcisse views tylermcgin
     class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root _poll-details-component_863fb2 css-1j74uew-MuiPaper-root-MuiCard-root"
     style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
   >
+    <div
+      class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
+    >
+      <div
+        class="MuiCardHeader-avatar css-1r9wl67-MuiCardHeader-avatar"
+      >
+        <div
+          aria-label="Tyler McGinnis"
+          class="MuiAvatar-root MuiAvatar-circular _poll-details-avatar-img_863fb2 css-fmeqll-MuiAvatar-root"
+        >
+          <img
+            class="MuiAvatar-img css-1su80sj-MuiAvatar-img"
+            src="/avatars/tyler.png"
+          />
+        </div>
+      </div>
+      <div
+        class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
+      >
+        <span
+          class="MuiTypography-root MuiTypography-body2 MuiCardHeader-title css-7ctihp-MuiTypography-root"
+        >
+           By Tyler McGinnis
+        </span>
+        <span
+          class="MuiTypography-root MuiTypography-body2 MuiCardHeader-subheader css-1a1whku-MuiTypography-root"
+        >
+          Asked On 15/03/2017
+        </span>
+      </div>
+      <div
+        class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
+      >
+        <button
+          aria-label="view details"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+          data-mui-internal-clone-element="true"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+            data-testid="ZoomOutMapIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="m15 3 2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zm6 12-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zm12-6-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
     <button
       class="MuiButtonBase-root MuiCardActionArea-root css-coyn9m-MuiButtonBase-root-MuiCardActionArea-root"
       tabindex="0"
       type="button"
     >
-      <div
-        class="MuiCardHeader-root css-149tc0y-MuiCardHeader-root"
-      >
-        <div
-          class="MuiCardHeader-avatar css-1r9wl67-MuiCardHeader-avatar"
-        >
-          <div
-            aria-label="Tyler McGinnis"
-            class="MuiAvatar-root MuiAvatar-circular _poll-details-avatar-img_863fb2 css-fmeqll-MuiAvatar-root"
-          >
-            <img
-              class="MuiAvatar-img css-1su80sj-MuiAvatar-img"
-              src="/avatars/tyler.png"
-            />
-          </div>
-        </div>
-        <div
-          class="MuiCardHeader-content css-1jkp9bu-MuiCardHeader-content"
-        >
-          <span
-            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-title css-7ctihp-MuiTypography-root"
-          >
-             By Tyler McGinnis
-          </span>
-          <span
-            class="MuiTypography-root MuiTypography-body2 MuiCardHeader-subheader css-1a1whku-MuiTypography-root"
-          >
-            Asked On 15/03/2017
-          </span>
-        </div>
-      </div>
       <span
         class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
       />
